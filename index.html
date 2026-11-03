@@ -1,475 +1,1330 @@
 
+
+
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#A65339">
 <title>Praktiknavet – APL utan krångel</title>
-/* Praktiknavet – professionell visuell uppdatering.
-   Klistra in längst ned i befintligt <style>-block. */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
-:root{--pink:#E8B8BD;--pink-light:#F8EAEB;--pink-dark:#945769;--ochre:#B88A35;--ochre-light:#F5E6CE;--cream:#FFFBF6;--ink:#302A2C;--muted:#746C6D;--line:#E9DDDB}
-body{font-family:'DM Sans',Arial,sans-serif;font-size:15px;line-height:1.55;background:var(--cream);color:var(--ink)}
-h1,h2,h3,.logo,.tile{font-family:Manrope,Arial,sans-serif;letter-spacing:-.035em}
-h2{font-size:clamp(23px,3vw,30px);font-weight:800}h3{font-weight:750}
-header{background:linear-gradient(115deg,#F0CDD0 0%,#E8B8BD 68%,#E0A7AF 100%);border-bottom:0;padding:29px 5%;box-shadow:0 2px 14px #4D34300A}
-.logo{font-size:clamp(27px,3vw,34px);font-weight:800;letter-spacing:-.055em}
-.heart{color:#B88A35}.subtitle{font-weight:600;color:#654E54;letter-spacing:.02em}
-main{max-width:1080px;padding-top:32px}
-.hero{background:linear-gradient(125deg,#F7E5E7,#FFF7EB);border:1px solid #EDD7D8;border-radius:22px;padding:36px 38px}
-.hero h2{font-size:clamp(26px,3vw,34px);line-height:1.2;margin-bottom:12px}
-.hero p{max-width:650px;color:#615759;margin-bottom:0}
-.nav{gap:8px;margin-bottom:25px}.nav button{background:#fffaf6;border:1px solid #EADDD9;color:#5D5054;font-weight:600;font-size:13px;padding:10px 14px;border-radius:999px}
-.nav button.active{background:#945769;color:white;border-color:#945769}
-.grid{gap:16px}.tile{border-radius:18px;min-height:108px;padding:26px 25px;font-size:19px;letter-spacing:-.025em;transition:transform .16s ease,box-shadow .16s ease;box-shadow:0 2px 10px #3C272508}
-.tile:nth-child(4n+1){background:#E8B8BD;border-color:#E8B8BD}
-.tile:nth-child(4n+2){background:#EACD91;border-color:#EACD91}
-.tile:nth-child(4n+3){background:#F4DDDF;border-color:#F4DDDF}
-.tile:nth-child(4n+4){background:#F0E1C5;border-color:#F0E1C5}
-.tile:hover{transform:translateY(-2px);filter:none;box-shadow:0 9px 24px #6D45451C}
-.card{border-radius:19px;border-color:#EBE0DD;padding:25px;box-shadow:0 5px 22px #48312B0A;background:#fffefd}
-.card.soft{background:#F9ECED}.tag{background:#F5E6CE;color:#755821;font-weight:700}
-button{transition:background .15s ease,transform .15s ease;font-weight:600}button.primary{background:#B88A35;border-color:#B88A35;color:white}button.primary:hover{background:#9D7328;transform:translateY(-1px)}
-input,select,textarea{border:1px solid #DCCFCD;border-radius:11px;padding:13px;background:white}input:focus,select:focus,textarea:focus{outline:2px solid #C78A98;outline-offset:1px}
-.notice{background:#F6E9CF;color:#67502E;border:1px solid #EDDEBD}.muted{color:#746C6D}
-@media(max-width:650px){header{padding:23px 5%}.hero{padding:25px 23px}.tile{min-height:84px;padding:23px}.card{padding:19px}.nav button{font-size:12px}}<style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400,20,1;9..144,500,20,1;9..144,600,20,1&display=swap" rel="stylesheet">
+
+<style>
 :root {
-  --pink:#E9AEB9;
-  --pink-light:#FBE9ED;
-  --pink-dark:#9C5269;
-  --ochre:#D9AA48;
-  --ochre-light:#FFF1C9;
-  --cream:#FFF9F0;
-  --ink:#352E32;
-  --muted:#766D70;
-  --line:#EADDE0;
+  --terra:#A65339;
+  --terra-dark:#7E3D2D;
+  --terra-soft:#EAD1C2;
+  --sage:#66715A;
+  --sage-light:#E4E8DB;
+  --ochre:#C29B52;
+  --linen:#E7D4B0;
+  --cream:#FAF5EB;
+  --paper:#FFFCF7;
+  --ink:#42372F;
+  --muted:#796E64;
+  --line:#E8DDD0;
+  --shadow:0 8px 28px rgba(77,51,37,.055);
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,sans-serif;font-size:15px}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font:15px/1.6 "DM Sans",Arial,sans-serif;
+}
 button,input,select,textarea{font:inherit}
-button{cursor:pointer;border:1px solid var(--line);border-radius:13px;padding:12px 17px;background:white;color:var(--ink)}
-button:hover{background:var(--ochre-light)}
-button.primary{background:var(--ochre);border-color:var(--ochre);font-weight:bold}
-button.active{background:var(--pink);border-color:var(--pink)}
-header{background:var(--pink);padding:25px 5%;border-bottom:5px solid var(--ochre)}
-.header-inner{max-width:1120px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px}
-.logo{font-size:32px;font-weight:800;letter-spacing:-1px}
-.heart{color:#A77B17}
-.subtitle{margin-top:5px;font-size:14px}
-main{max-width:1120px;margin:auto;padding:30px 18px 80px}
-h2{font-size:25px;margin:0 0 12px}
-h3{margin-top:0;font-size:19px}
-p{line-height:1.55}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--ochre);
+  outline-offset:2px;
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+h1,h2,h3{line-height:1.18}
+h1,h2{
+  font-family:"Fraunces",Georgia,serif;
+  font-weight:500;
+  letter-spacing:-.035em;
+}
+h1{font-size:clamp(34px,5vw,55px);margin:0 0 14px}
+h2{font-size:clamp(27px,3.3vw,36px);margin:0 0 10px}
+h3{font-size:18px;margin:0 0 10px;font-weight:700}
+p{margin:8px 0 14px}
+a{color:var(--terra-dark)}
+small,.small{font-size:12px}
 .muted{color:var(--muted)}
-.nav{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:25px}
-.nav button{background:#FFFDFC}
-.nav button.active{background:var(--pink)}
-.hero{background:var(--pink-light);border:1px solid #F0CCD5;border-radius:22px;padding:30px;margin-bottom:24px}
-.hero h2{font-size:29px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.tile{padding:28px;text-align:left;font-size:20px;font-weight:bold;min-height:110px;border-radius:20px}
-.tile:nth-child(4n+1){background:var(--pink);border-color:var(--pink)}
-.tile:nth-child(4n+2){background:var(--ochre-light);border-color:#EAD394}
-.tile:nth-child(4n+3){background:#F7D9E1;border-color:#F7D9E1}
-.tile:nth-child(4n+4){background:#F3DFAC;border-color:#F3DFAC}
-.tile:hover{filter:brightness(.97)}
-.card{background:#FFFDFC;border:1px solid var(--line);border-radius:20px;padding:23px;margin-bottom:16px;box-shadow:0 3px 12px #6B46500A}
-.card.soft{background:var(--pink-light)}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.tag{display:inline-block;background:var(--ochre-light);padding:7px 12px;border-radius:30px;font-size:12px}
-label{display:block;font-weight:bold;font-size:14px;margin-top:12px}
-input,select,textarea{width:100%;padding:12px;margin:7px 0 9px;border:1px solid #D9C9CE;border-radius:11px;background:white}
-textarea{min-height:90px}
-.notice{background:var(--ochre-light);border-radius:14px;padding:17px;margin:18px 0}
-.small{font-size:13px}
-.section{margin-top:25px}
-hr{border:0;border-top:1px solid var(--line);margin:20px 0}
-@media(max-width:650px){
-  .header-inner{flex-direction:column;align-items:flex-start}
-  .logo{font-size:27px}
-  .grid{grid-template-columns:1fr}
-  .hero{padding:22px}
-  .tile{min-height:85px}
-  main{padding-top:20px}
+.eyebrow{
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  font-size:11px;
+  font-weight:800;
+}
+.shell{max-width:1180px;margin:auto;padding:0 24px}
+.site-header{
+  background:var(--terra);
+  color:#FFF7ED;
+  position:relative;
+  overflow:hidden;
+}
+.site-header:before{
+  content:"";
+  position:absolute;
+  right:-70px;top:-90px;
+  width:340px;height:340px;
+  border:1px solid rgba(255,245,230,.2);
+  border-radius:42% 58% 45% 55%;
+  transform:rotate(-30deg);
+  pointer-events:none;
+}
+.site-header:after{
+  content:"";
+  position:absolute;
+  right:65px;top:-95px;
+  width:150px;height:300px;
+  border:1px solid rgba(255,245,230,.13);
+  border-radius:50%;
+  transform:rotate(35deg);
+  pointer-events:none;
+}
+.header-inner{
+  position:relative;z-index:1;
+  display:flex;justify-content:space-between;
+  align-items:center;gap:24px;
+  min-height:112px;
+}
+.brand{
+  font-family:"Fraunces",Georgia,serif;
+  font-size:31px;
+  letter-spacing:-.05em;
+  line-height:1.15;
+}
+.brand-heart{color:#F0C77A;font-size:23px}
+.brand-sub{
+  color:#F5DDD0;
+  font-size:12px;
+  letter-spacing:.07em;
+  margin-top:5px;
+}
+.role-box{display:flex;align-items:center;gap:12px}
+.role-box label{color:#FFE7D8;font-size:12px;font-weight:700}
+.role-box select{
+  width:auto;min-width:130px;
+  margin:0;background:#FFF8EF;
+  border-color:transparent;
+}
+main{padding-top:34px!important;padding-bottom:90px!important}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:15px;margin-bottom:28px;flex-wrap:wrap;
+}
+.breadcrumb{font-size:13px;color:var(--muted)}
+.back{
+  border:1px solid var(--line);
+  background:var(--paper);
+  padding:10px 16px;border-radius:12px;
+  color:var(--terra-dark);
+  font-weight:700;
+}
+.hero{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:clamp(26px,5vw,52px);
+  box-shadow:var(--shadow);
+  margin-bottom:28px;
+  position:relative;
+  overflow:hidden;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  width:170px;height:250px;
+  right:-85px;bottom:-120px;
+  border:2px solid #EAD8C5;
+  border-radius:50% 0 50% 0;
+  transform:rotate(-38deg);
+  pointer-events:none;
+}
+.hero p{max-width:570px;font-size:16px;color:var(--muted)}
+.hero .eyebrow{color:var(--terra)}
+.section-title{margin:28px 0 15px}
+.section-title h2{font-size:27px}
+.tile-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.tile{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:space-between;
+  text-align:left;
+  min-height:158px;
+  padding:26px 27px;
+  border:1px solid transparent;
+  border-radius:20px;
+  transition:transform .15s,box-shadow .15s;
+  color:var(--ink);
+}
+.tile:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+.tile strong{
+  font-family:"Fraunces",Georgia,serif;
+  font-size:27px;
+  font-weight:500;
+  letter-spacing:-.025em;
+}
+.tile span{font-size:13px;color:#63574C}
+.tile.terra{background:#E8D1C4}
+.tile.sage{background:#E2E7D9}
+.tile.sand{background:#EFE1C9}
+.tile.rose{background:#EBDCD5}
+.secondary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.secondary-tile{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+  min-height:95px;
+  text-align:left;
+  color:var(--ink);
+  font-weight:700;
+}
+.secondary-tile:hover{background:#F5EBDD}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:13px;
+  margin:22px 0 30px;
+}
+.stat{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:17px;
+  padding:20px;
+}
+.stat strong{
+  display:block;
+  font-family:"Fraunces",Georgia,serif;
+  font-size:33px;
+  font-weight:500;
+  color:var(--terra-dark);
+}
+.stat span{font-size:12px;color:var(--muted)}
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:19px;
+  padding:24px;
+  margin-bottom:15px;
+  box-shadow:var(--shadow);
+}
+.card.soft{background:#F1E4D8}
+.card.sage{background:var(--sage-light)}
+.row{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.stack{display:grid;gap:15px}
+.two-col{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.tag{
+  display:inline-flex;align-items:center;
+  background:var(--sage-light);
+  color:#46533D;
+  padding:5px 11px;
+  border-radius:99px;
+  font-size:12px;
+  font-weight:700;
+}
+.tag.wait{background:#F3E7CC;color:#785A29}
+.tag.no{background:#F2DAD4;color:#8A4437}
+label{
+  display:block;
+  font-size:13px;
+  font-weight:700;
+  margin:12px 0 4px;
+}
+input,select,textarea{
+  display:block;
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #DCCFC2;
+  border-radius:11px;
+  background:#FFF;
+  color:var(--ink);
+  margin:7px 0 12px;
+}
+textarea{min-height:98px;resize:vertical}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#FFF;
+  color:var(--ink);
+  padding:12px 18px;
+  font-weight:700;
+}
+.btn:hover{background:#F6EBDD}
+.btn.primary{
+  background:var(--terra);
+  border-color:var(--terra);
+  color:white;
+}
+.btn.primary:hover{background:var(--terra-dark)}
+.btn.sage{
+  background:var(--sage);
+  border-color:var(--sage);
+  color:white;
+}
+.btn.small{padding:9px 13px;font-size:12px}
+.notice{
+  background:#F2E8D7;
+  border-left:3px solid var(--ochre);
+  border-radius:0 12px 12px 0;
+  padding:15px 18px;
+  margin:18px 0;
+  color:#665542;
+}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0 22px}
+.toolbar .btn{padding:10px 14px}
+.toolbar .selected{
+  background:var(--terra);
+  color:white;
+  border-color:var(--terra);
+}
+.page-heading{margin-bottom:24px}
+.page-heading p{color:var(--muted)}
+.list-item{
+  padding:17px 0;
+  border-bottom:1px solid var(--line);
+}
+.list-item:last-child{border-bottom:0}
+.footer{
+  margin-top:48px;
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+}
+.empty{
+  padding:35px 20px;
+  text-align:center;
+  background:var(--paper);
+  border:1px dashed #DCCABD;
+  border-radius:16px;
+  color:var(--muted);
+}
+@media(max-width:760px){
+  .secondary-grid{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat{padding:15px}
+  .stat strong{font-size:27px}
+  .two-col{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .shell{padding-left:16px;padding-right:16px}
+  .header-inner{min-height:104px}
+  .brand{font-size:25px}
+  .role-box{display:block}
+  .role-box label{margin:0 0 4px}
+  .role-box select{min-width:105px}
+  .tile-grid{grid-template-columns:1fr;gap:12px}
+  .tile{min-height:118px;padding:22px}
+  .tile strong{font-size:25px}
+  .stats{gap:8px}
+  .stat{padding:12px}
+  .stat strong{font-size:24px}
+  .stat span{font-size:10px}
+  .secondary-grid{gap:9px}
+  .secondary-tile{min-height:85px;padding:15px;font-size:13px}
+  .card{padding:19px}
+  .hero{padding:25px}
 }
 </style>
 </head>
+
 <body>
-<header>
-<div class="header-inner">
-<div>
-<div class="logo">Praktiknavet <span class="heart">♥</span></div>
-<div class="subtitle">APL utan krångel</div>
-</div>
-<div>
-<label for="role" style="margin:0">Visa som</label>
-<select id="role" style="width:auto;margin:6px 0 0" onchange="setRole(this.value)">
-<option value="teacher">Lärare</option>
-<option value="student">Elev</option>
-</select>
-</div>
-</div>
+<header class="site-header">
+  <div class="shell header-inner">
+    <div>
+      <div class="brand">Praktiknavet<span class="brand-heart"> ♥</span></div>
+      <div class="brand-sub">APL UTAN KRÅNGEL</div>
+    </div>
+    <div class="role-box">
+      <label for="role">Visa som</label>
+      <select id="role" onchange="setRole(this.value)">
+        <option value="teacher">Lärare</option>
+        <option value="student">Elev</option>
+      </select>
+    </div>
+  </div>
 </header>
-<main id="app"></main>
+
+<main id="app" class="shell"></main>
+
 <script>
-const W={
- NVF25A:[3,4,5],
- NVF25B:[6,7,9],
- NVF24A:[10,11,12,14,15,16],
- NVF24B:[17,18,19,20,21]
+"use strict";
+
+/* APL-veckor våren 2027 */
+const W = {
+  NVF25A:[3,4,5],
+  NVF25B:[6,7,9],
+  NVF24A:[10,11,12,14,15,16],
+  NVF24B:[17,18,19,20,21]
 };
-const courses={
- NVF25:[
- ["VVS och fastighet nivå 2",40],
- ["VVS-teknik nivå 1",20],
- ["VVS-teknik nivå 2",30],
- ["VVS-installation nivå 1",20],
- ["Försäljning och kundservice nivå 1",40]
- ],
- NVF24:[
- ["Entreprenadteknik",20],
- ["Injusteringsteknik",30],
- ["VVS gassvetsning rör",30],
- ["VVS-teknik",130],
- ["Värmeteknik 2",40]
- ]
+
+/* Planerade APL-timmar */
+const courses = {
+  NVF25:[
+    ["VVS och fastighet nivå 2",40],
+    ["VVS-teknik nivå 1",20],
+    ["VVS-teknik nivå 2",30],
+    ["VVS-installation nivå 1",20],
+    ["Försäljning och kundservice nivå 1",40]
+  ],
+  NVF24:[
+    ["Entreprenadteknik",20],
+    ["Injusteringsteknik",30],
+    ["VVS gassvetsning rör",30],
+    ["VVS-teknik",130],
+    ["Värmeteknik 2",40]
+  ]
 };
-const demoStudents=[];
-for(const [group,n] of [
- ["NVF25A",10],["NVF25B",10],
- ["NVF24A",9],["NVF24B",8]
-]){
- for(let i=1;i<=n;i++){
- demoStudents.push({
- id:group+"-"+i,
- name:"Elev "+String(i).padStart(2,"0")+" · "+group,
- group:group,
- company:""
- });
- }
+
+const demoStudents = [];
+for (const [group,count] of [
+  ["NVF25A",10],
+  ["NVF25B",10],
+  ["NVF24A",9],
+  ["NVF24B",8]
+]) {
+  for(let i=1;i<=count;i++){
+    demoStudents.push({
+      id:group+"-"+i,
+      name:"Elev "+String(i).padStart(2,"0")+" · "+group,
+      group,
+      company:""
+    });
+  }
 }
-const defaults={
- students:demoStudents,
- companies:[
- {id:"c1",name:"Exempel VVS AB",contact:"Anna Andersson",phone:"070-000 00 01",capacity:2,status:"Tackat ja",history:[]},
- {id:"c2",name:"Rör & Värme Demo",contact:"Erik Eriksson",phone:"070-000 00 02",capacity:1,status:"Kontaktad",history:[]}
- ],
- reports:[],
- visits:[],
- risks:[],
- decisions:[]
+
+const defaults = {
+  students:demoStudents,
+  companies:[
+    {
+      id:"c1",
+      name:"Exempel VVS AB",
+      contact:"Anna Andersson",
+      phone:"070-000 00 01",
+      capacity:2,
+      status:"Tackat ja",
+      history:[]
+    },
+    {
+      id:"c2",
+      name:"Rör & Värme Demo",
+      contact:"Erik Eriksson",
+      phone:"070-000 00 02",
+      capacity:1,
+      status:"Kontaktad",
+      history:[]
+    }
+  ],
+  reports:[],
+  visits:[],
+  risks:[],
+  decisions:[]
 };
+
+const STORAGE_KEY = "praktiknavet-tomas-v1";
+
+function clone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
 let data;
 try{
- data=JSON.parse(localStorage.getItem("praktiknavet-tomas-v1"))||structuredClone(defaults);
+  data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || clone(defaults);
 }catch(e){
- data=structuredClone(defaults);
+  data = clone(defaults);
 }
+
+/* Komplettera äldre sparad demodata */
+for(const key of ["students","companies","reports","visits","risks","decisions"]){
+  if(!Array.isArray(data[key])) data[key]=clone(defaults[key]);
+}
+for(const c of data.companies){
+  if(!Array.isArray(c.history)) c.history=[];
+}
+
 let role="teacher";
 let page="home";
-let studentId=data.students[0].id;
-const save=()=>localStorage.setItem("praktiknavet-tomas-v1",JSON.stringify(data));
-const el=document.getElementById("app");
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
-const student=id=>data.students.find(x=>x.id===id);
-const company=id=>data.companies.find(x=>x.id===id);
-const companyName=id=>company(id)?.name||"Inte placerad";
-const groupWeeks=s=>W[s.group]||[];
-const overlap=(a,b)=>a.some(w=>b.includes(w));
-const occupied=(c,s)=>data.students.filter(x=>
- x.id!==s.id&&x.company===c.id&&
- overlap(groupWeeks(x),groupWeeks(s))
-).length;
-function setRole(r){role=r;page="home";render()}
-function go(p){page=p;render()}
-function nav(){
- const names=[
- ["companies","Företag"],["students","Elever"],
- ["reports","Veckorapporter"],["todo","Att göra"],
- ["courses","Kurser & APL-timmar"],["visits","APL-besök"],
- ["risks","Riskbedömning"],["decisions","APL-beslut"]
- ];
- return '<div class="nav"><button onclick="go(\'home\')">Startsida</button>'+
- names.map(([p,n])=>
- `<button class="${page===p?'active':''}" onclick="go('${p}')">${n}</button>`
- ).join("")+"</div>";
+let studentId=data.students[0]?.id || "";
+let groupFilter="all";
+
+const app=document.getElementById("app");
+
+function save(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  }catch(e){
+    alert("Det gick inte att spara i webbläsaren.");
+  }
 }
+
+function esc(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]);
+}
+
+function student(id){
+  return data.students.find(s=>s.id===id);
+}
+function company(id){
+  return data.companies.find(c=>c.id===id);
+}
+function companyName(id){
+  return company(id)?.name || "Inte placerad";
+}
+function weeks(s){
+  return W[s?.group]||[];
+}
+function overlap(a,b){
+  return a.some(w=>b.includes(w));
+}
+function occupied(c,s){
+  return data.students.filter(x=>
+    x.id!==s.id &&
+    x.company===c.id &&
+    overlap(weeks(x),weeks(s))
+  ).length;
+}
+function tag(status){
+  let type=status==="Tackat ja"?"":
+    status==="Tackat nej"?"no":"wait";
+  return `<span class="tag ${type}">${esc(status)}</span>`;
+}
+function dateToday(){
+  const d=new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth()+1).padStart(2,"0"),
+    String(d.getDate()).padStart(2,"0")
+  ].join("-");
+}
+function setRole(value){
+  role=value;
+  page="home";
+  render();
+}
+function go(value){
+  page=value;
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function pageTop(title,description=""){
+  return `
+    <div class="topbar">
+      <span class="breadcrumb">Praktiknavet / ${esc(title)}</span>
+      <button class="back" onclick="go('home')">Till startsidan</button>
+    </div>
+    <div class="page-heading">
+      <h2>${esc(title)}</h2>
+      ${description?`<p>${esc(description)}</p>`:""}
+    </div>
+  `;
+}
+function footer(){
+  return `<div class="footer">
+    Praktiknavet ♥ · Demoversion · Uppgifter sparas lokalt i webbläsaren
+  </div>`;
+}
+
 function render(){
- document.getElementById("role").value=role;
- if(role==="student"){renderStudent();return}
- let html=nav();
- if(page==="home"){
- html+=`<div class="hero">
- <h2>Välkommen till Praktiknavet</h2>
- <p>Här samlar vi företag, elever och allt som hör till APL.
- Enkelt, tydligt och utan krångel.</p>
- </div>
- <div class="grid">
- ${[
- ["companies","Företag"],["students","Elever"],
- ["reports","Veckorapporter"],["todo","Att göra"],
- ["courses","Kurser & APL-timmar"],["visits","APL-besök"],
- ["risks","Riskbedömning"],["decisions","APL-beslut"]
- ].map(([p,n])=>`<button class="tile" onclick="go('${p}')">${n}</button>`).join("")}
- </div>
- <p class="notice small">Demoversion med fiktiva uppgifter.
- Ändringar sparas endast i den egna webbläsaren.</p>`;
- }
- if(page==="companies"){
- html+=`<h2>Företag</h2>
- <div class="card soft"><h3>Lägg till företag</h3>
- <form onsubmit="addCompany(event)">
- <label>Företagets namn<input name="name" required></label>
- <label>Kontaktperson<input name="contact"></label>
- <label>Telefon<input name="phone"></label>
- <label>Antal samtidiga platser
- <input name="capacity" type="number" min="1" value="1" required></label>
- <button class="primary">Spara företag</button>
- </form></div>
- ${data.companies.map(c=>`<div class="card">
- <div class="row"><h3>${esc(c.name)}</h3>
- <span class="tag">${esc(c.status)}</span></div>
- <p>${esc(c.contact)} · ${esc(c.phone)}<br>
- Kapacitet: ${c.capacity} elever samtidigt</p>
- <label>Status<select onchange="updateCompany('${c.id}','status',this.value)">
- ${["Inte kontaktad","Kontaktad","Väntar svar","Tackat ja","Tackat nej"]
- .map(x=>`<option ${x===c.status?"selected":""}>${x}</option>`).join("")}
- </select></label>
- <label>Antal platser<input type="number" min="1"
- value="${c.capacity}" onchange="changeCapacity('${c.id}',this.value)"></label>
- <label>Kontaktanteckning
- <textarea id="note-${c.id}" placeholder="Vad kom ni överens om?"></textarea></label>
- <button onclick="addNote('${c.id}')">Spara kontaktanteckning</button>
- <p class="muted small">${(c.history||[]).map(h=>esc(h)).join("<br>")}</p>
- </div>`).join("")}`;
- }
- if(page==="students"){
- html+=`<h2>Elever och placeringar</h2>
- <p class="muted">${data.students.filter(s=>s.company).length}
- av ${data.students.length} elever placerade.</p>
- ${data.students.map(s=>`<div class="card">
- <div class="row"><strong>${esc(s.name)}</strong>
- <span class="tag">Vecka ${groupWeeks(s).join(", ")}</span></div>
- <p>${esc(companyName(s.company))}</p>
- <select onchange="place('${s.id}',this.value)">
- <option value="">Ingen APL-plats</option>
- ${data.companies.map(c=>`<option value="${c.id}"
- ${s.company===c.id?"selected":""}>
- ${esc(c.name)} (${c.capacity} platser)</option>`).join("")}
- </select></div>`).join("")}`;
- }
- if(page==="reports"){
- html+=`<h2>Veckorapporter</h2>
- ${data.reports.length?data.reports.map(r=>`<div class="card">
- <div class="row"><strong>${esc(student(r.studentId)?.name)}</strong>
- <span class="tag">Vecka ${r.week}</span></div>
- <p><strong>Gjort:</strong> ${esc(r.did)}</p>
- <p><strong>Lärt mig:</strong> ${esc(r.learned)}</p>
- <p><strong>Roligt eller svårt:</strong> ${esc(r.feeling)}</p>
- <p>Veckans betyg: ${r.rating}/5</p>
- <p><strong>Lärarens svar:</strong> ${esc(r.reply||"Inte besvarad")}</p>
- <textarea id="reply-${r.id}" placeholder="Skriv svar till eleven">${esc(r.reply||"")}</textarea>
- <button class="primary" onclick="reply('${r.id}')">Svara på rapport</button>
- </div>`).join(""):
- "<div class='card'>Inga veckorapporter har lämnats in ännu.</div>"}`;
- }
- if(page==="todo"){
- let unplaced=data.students.filter(s=>!s.company);
- let unanswered=data.reports.filter(r=>!r.reply);
- html+=`<h2>Att göra</h2><div class="grid">
- <div class="card"><h3>${unplaced.length} elever saknar plats</h3>
- <p>${unplaced.slice(0,8).map(s=>esc(s.name)).join("<br>")}</p>
- <button onclick="go('students')">Visa elever</button></div>
- <div class="card"><h3>${unanswered.length} rapporter att besvara</h3>
- <button onclick="go('reports')">Visa rapporter</button></div>
- <div class="card"><h3>Företag att följa upp</h3>
- ${data.companies.filter(c=>c.status==="Väntar svar"||c.status==="Kontaktad")
- .map(c=>`<p>${esc(c.name)}</p>`).join("")||"Inga just nu"}</div>
- <div class="card"><h3>APL-besök</h3>
- <p>${data.visits.length} registrerade besök</p></div>
- </div>`;
- }
- if(page==="courses"){
- html+=`<h2>Kurser & APL-timmar</h2>
- ${Object.entries(courses).map(([g,items])=>`<div class="card">
- <h3>${g} · ${g==="NVF25"?"Gy25":"Gy11"}</h3>
- ${items.map(([n,h])=>`<p>${esc(n)}: <strong>${h} timmar</strong></p>`).join("")}
- <hr><strong>Totalt planerat:
- ${items.reduce((a,x)=>a+x[1],0)} timmar</strong>
- </div>`).join("")}
- <p class="muted small">Timmarna är planerad förläggning till APL,
- inte genomförda eller godkända timmar.</p>`;
- }
- if(["visits","risks","decisions"].includes(page)){
- const titles={
- visits:"APL-besök",
- risks:"Riskbedömning",
- decisions:"APL-beslut – underlag"
- };
- html+=`<h2>${titles[page]}</h2>
- <p class="notice small">${
- page==="decisions"?
- "Här samlas underlag. Ett sparat underlag är inte ett rektorsbeslut.":
- page==="risks"?
- "En checklista ersätter inte en faktisk riskbedömning på arbetsplatsen.":
- "Registrera planerade eller genomförda besök."
- }</p>
- <div class="card"><form onsubmit="addRecord(event,'${page}')">
- <label>Elev<select name="studentId">
- ${data.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
- </select></label>
- <label>Datum<input name="date" type="date" required></label>
- <label>${
- page==="visits"?"Lärare och anteckningar":
- page==="risks"?"Risker, åtgärder och ansvarig":
- "Samråd med arbetsplatsen, kursinnehåll och timmar"
- }<textarea name="notes" required></textarea></label>
- <button class="primary">Spara underlag</button></form></div>
- ${data[page].map(x=>`<div class="card">
- <strong>${esc(student(x.studentId)?.name)}</strong>
- <p>${esc(x.date)} · ${esc(companyName(x.companyId))}</p>
- <p>${esc(x.notes)}</p></div>`).join("")}`;
- }
- el.innerHTML=html;
+  document.getElementById("role").value=role;
+  if(role==="student"){
+    renderStudent();
+    return;
+  }
+
+  let html="";
+
+  if(page==="home") html=renderHome();
+  if(page==="companies") html=renderCompanies();
+  if(page==="students") html=renderStudents();
+  if(page==="reports") html=renderReports();
+  if(page==="todo") html=renderTodo();
+  if(page==="courses") html=renderCourses();
+  if(page==="visits") html=renderRecords("visits");
+  if(page==="risks") html=renderRecords("risks");
+  if(page==="decisions") html=renderRecords("decisions");
+
+  app.innerHTML=html+footer();
 }
-function addCompany(e){
- e.preventDefault();
- let f=new FormData(e.target);
- data.companies.push({
- id:"c"+Date.now(),
- name:f.get("name"),
- contact:f.get("contact"),
- phone:f.get("phone"),
- capacity:+f.get("capacity"),
- status:"Inte kontaktad",
- history:[]
- });
- save();render();
+
+function renderHome(){
+  const placed=data.students.filter(s=>s.company).length;
+  const unanswered=data.reports.filter(r=>!r.reply).length;
+
+  return `
+    <section class="hero">
+      <div class="eyebrow">Välkommen tillbaka</div>
+      <h1>Allt kring APL.<br>På ett och samma ställe.</h1>
+      <p>
+        Håll koll på företag, elever och praktikveckor.
+        Lite mindre administration, lite mer tid till eleverna.
+      </p>
+    </section>
+
+    <div class="stats">
+      <div class="stat">
+        <strong>${placed}/${data.students.length}</strong>
+        <span>Elever placerade</span>
+      </div>
+      <div class="stat">
+        <strong>${data.companies.length}</strong>
+        <span>Företag</span>
+      </div>
+      <div class="stat">
+        <strong>${unanswered}</strong>
+        <span>Rapporter att svara på</span>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h2>Vad vill du göra?</h2>
+      <p class="muted">Välj det du behöver arbeta med.</p>
+    </div>
+
+    <div class="tile-grid">
+      <button class="tile terra" onclick="go('companies')">
+        <strong>Företag</strong>
+        <span>Kontakter, svar och lediga platser</span>
+      </button>
+      <button class="tile sage" onclick="go('students')">
+        <strong>Elever</strong>
+        <span>Placeringar och APL-veckor</span>
+      </button>
+      <button class="tile sand" onclick="go('reports')">
+        <strong>Veckorapporter</strong>
+        <span>Läs, följ upp och svara</span>
+      </button>
+      <button class="tile rose" onclick="go('todo')">
+        <strong>Att göra</strong>
+        <span>Det som behöver din uppmärksamhet</span>
+      </button>
+    </div>
+
+    <div class="section-title" style="margin-top:40px">
+      <h2>Fler verktyg</h2>
+    </div>
+
+    <div class="secondary-grid">
+      <button class="secondary-tile" onclick="go('courses')">
+        Kurser & APL-timmar
+      </button>
+      <button class="secondary-tile" onclick="go('visits')">
+        APL-besök
+      </button>
+      <button class="secondary-tile" onclick="go('risks')">
+        Riskbedömning
+      </button>
+      <button class="secondary-tile" onclick="go('decisions')">
+        APL-beslut
+      </button>
+    </div>
+
+    <div class="notice small">
+      Detta är en demo med fiktiva elever och företag.
+      Inga uppgifter delas automatiskt mellan olika datorer.
+    </div>
+  `;
 }
-function updateCompany(id,k,v){
- company(id)[k]=v;save();render();
+
+function renderCompanies(){
+  return pageTop(
+    "Företag",
+    "Samla kontakter, dokumentera svar och håll koll på platserna."
+  )+`
+    <div class="card soft">
+      <h3>Lägg till ett företag</h3>
+      <form onsubmit="addCompany(event)">
+        <div class="two-col">
+          <div>
+            <label>Företagets namn
+              <input name="name" required placeholder="Företagsnamn">
+            </label>
+          </div>
+          <div>
+            <label>Kontaktperson
+              <input name="contact" placeholder="Namn">
+            </label>
+          </div>
+          <div>
+            <label>Telefon
+              <input name="phone" placeholder="Telefonnummer">
+            </label>
+          </div>
+          <div>
+            <label>Antal samtidiga APL-platser
+              <input name="capacity" type="number" min="1" value="1" required>
+            </label>
+          </div>
+        </div>
+        <button class="btn primary" type="submit">Lägg till företag</button>
+      </form>
+    </div>
+
+    <div class="section-title">
+      <h2>Företagslista</h2>
+      <p class="muted">${data.companies.length} företag registrerade</p>
+    </div>
+
+    ${data.companies.map(c=>`
+      <div class="card">
+        <div class="row">
+          <h3>${esc(c.name)}</h3>
+          ${tag(c.status)}
+        </div>
+        <p class="muted">
+          ${esc(c.contact||"Ingen kontaktperson")}
+          ${c.phone?" · "+esc(c.phone):""}
+        </p>
+        <p><strong>Kapacitet:</strong> ${Number(c.capacity)||1}
+          samtidiga elever</p>
+
+        <div class="two-col">
+          <div>
+            <label>Status
+              <select onchange="updateCompany('${c.id}','status',this.value)">
+                ${[
+                  "Inte kontaktad","Kontaktad","Väntar svar",
+                  "Tackat ja","Tackat nej"
+                ].map(x=>`
+                  <option ${x===c.status?"selected":""}>${x}</option>
+                `).join("")}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label>Antal platser
+              <input type="number" min="1"
+                value="${Number(c.capacity)||1}"
+                onchange="changeCapacity('${c.id}',this.value)">
+            </label>
+          </div>
+        </div>
+
+        <label>Kontaktanteckning
+          <textarea id="note-${c.id}"
+            placeholder="Vad har ni pratat om?"></textarea>
+        </label>
+        <button class="btn small" onclick="addNote('${c.id}')">
+          Spara anteckning
+        </button>
+
+        ${(c.history||[]).length?`
+          <hr>
+          <h3>Kontaktlogg</h3>
+          ${c.history.map(h=>`
+            <div class="list-item small">${esc(h)}</div>
+          `).join("")}
+        `:""}
+      </div>
+    `).join("")}
+  `;
 }
-function changeCapacity(id,v){
- let c=company(id),n=+v;
- if(n<1||data.students.some(s=>
- s.company===id&&occupied(c,s)+1>n
- )){
- alert("Kapaciteten kan inte sänkas under antalet samtidigt placerade elever.");
- render();return;
- }
- c.capacity=n;save();render();
+
+function renderStudents(){
+  const groups=Object.keys(W);
+  const list=data.students.filter(s=>
+    groupFilter==="all"||s.group===groupFilter
+  );
+  const placed=data.students.filter(s=>s.company).length;
+
+  return pageTop(
+    "Elever & placeringar",
+    "Välj företag för varje elev. Appen kontrollerar företagets kapacitet."
+  )+`
+    <div class="stats">
+      <div class="stat">
+        <strong>${data.students.length}</strong>
+        <span>Elever totalt</span>
+      </div>
+      <div class="stat">
+        <strong>${placed}</strong>
+        <span>Placerade</span>
+      </div>
+      <div class="stat">
+        <strong>${data.students.length-placed}</strong>
+        <span>Saknar plats</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn ${groupFilter==="all"?"selected":""}"
+        onclick="filterGroup('all')">Alla</button>
+      ${groups.map(g=>`
+        <button class="btn ${groupFilter===g?"selected":""}"
+          onclick="filterGroup('${g}')">${g}</button>
+      `).join("")}
+    </div>
+
+    ${list.map(s=>`
+      <div class="card">
+        <div class="row">
+          <h3>${esc(s.name)}</h3>
+          <span class="tag">Vecka ${weeks(s).join(", ")}</span>
+        </div>
+        <p class="muted">${esc(companyName(s.company))}</p>
+        <label>APL-företag
+          <select onchange="place('${s.id}',this.value)">
+            <option value="">Ingen placering</option>
+            ${data.companies.map(c=>`
+              <option value="${c.id}"
+                ${s.company===c.id?"selected":""}>
+                ${esc(c.name)} · ${Number(c.capacity)||1} platser
+              </option>
+            `).join("")}
+          </select>
+        </label>
+      </div>
+    `).join("")}
+  `;
+}
+
+function filterGroup(g){
+  groupFilter=g;
+  render();
+}
+
+function renderReports(){
+  const reports=[...data.reports].sort((a,b)=>
+    Number(Boolean(a.reply))-Number(Boolean(b.reply))
+  );
+
+  return pageTop(
+    "Veckorapporter",
+    "Läs vad eleverna gjort under APL och ge återkoppling."
+  )+`
+    <div class="stats">
+      <div class="stat">
+        <strong>${reports.length}</strong>
+        <span>Inlämnade rapporter</span>
+      </div>
+      <div class="stat">
+        <strong>${reports.filter(r=>!r.reply).length}</strong>
+        <span>Väntar på svar</span>
+      </div>
+      <div class="stat">
+        <strong>${reports.filter(r=>r.reply).length}</strong>
+        <span>Besvarade</span>
+      </div>
+    </div>
+
+    ${reports.length?reports.map(r=>`
+      <div class="card">
+        <div class="row">
+          <h3>${esc(student(r.studentId)?.name||"Okänd elev")}</h3>
+          <span class="tag ${r.reply?"":"wait"}">
+            Vecka ${esc(r.week)} · ${r.reply?"Besvarad":"Väntar på svar"}
+          </span>
+        </div>
+        <p><strong>Det här har jag gjort:</strong><br>${esc(r.did)}</p>
+        <p><strong>Det här har jag lärt mig:</strong><br>${esc(r.learned)}</p>
+        <p><strong>Roligt eller svårt:</strong><br>${esc(r.feeling)}</p>
+        <p><strong>Veckans betyg:</strong> ${esc(r.rating)}/5</p>
+        <hr>
+        <label>Lärarens återkoppling
+          <textarea id="reply-${r.id}"
+            placeholder="Skriv ett svar till eleven...">${esc(r.reply||"")}</textarea>
+        </label>
+        <button class="btn primary" onclick="reply('${r.id}')">
+          Spara svar till eleven
+        </button>
+      </div>
+    `).join(""):
+      `<div class="empty">Inga veckorapporter har lämnats in ännu.</div>`
+    }
+  `;
+}
+
+function renderTodo(){
+  const unplaced=data.students.filter(s=>!s.company);
+  const unanswered=data.reports.filter(r=>!r.reply);
+  const followups=data.companies.filter(c=>
+    ["Kontaktad","Väntar svar"].includes(c.status)
+  );
+
+  return pageTop(
+    "Att göra",
+    "En enkel översikt över sådant som behöver följas upp."
+  )+`
+    <div class="two-col">
+      <div class="card">
+        <h3>Elever utan APL-plats</h3>
+        <p class="muted">${unplaced.length} elever</p>
+        ${unplaced.slice(0,10).map(s=>`
+          <div class="list-item">${esc(s.name)}</div>
+        `).join("")||"<p>Alla elever är placerade.</p>"}
+        <p><button class="btn" onclick="go('students')">
+          Visa placeringar
+        </button></p>
+      </div>
+
+      <div class="card">
+        <h3>Rapporter att besvara</h3>
+        <p class="muted">${unanswered.length} rapporter</p>
+        ${unanswered.slice(0,10).map(r=>`
+          <div class="list-item">
+            ${esc(student(r.studentId)?.name)} · vecka ${esc(r.week)}
+          </div>
+        `).join("")||"<p>Inga obesvarade rapporter.</p>"}
+        <p><button class="btn" onclick="go('reports')">
+          Visa rapporter
+        </button></p>
+      </div>
+
+      <div class="card">
+        <h3>Företag att följa upp</h3>
+        <p class="muted">${followups.length} företag</p>
+        ${followups.map(c=>`
+          <div class="list-item">
+            ${esc(c.name)}<br>
+            <span class="muted small">${esc(c.status)}</span>
+          </div>
+        `).join("")||"<p>Inga väntande företag just nu.</p>"}
+        <p><button class="btn" onclick="go('companies')">
+          Visa företag
+        </button></p>
+      </div>
+
+      <div class="card">
+        <h3>APL-besök</h3>
+        <p class="muted">${data.visits.length} registrerade underlag</p>
+        <p>Samla anteckningar och dokumentera kontakten
+        med handledare och elever.</p>
+        <button class="btn" onclick="go('visits')">
+          Visa APL-besök
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCourses(){
+  return pageTop(
+    "Kurser & APL-timmar",
+    "Översikt över den planerade förläggningen av kurser till APL."
+  )+`
+    ${Object.entries(courses).map(([g,items])=>`
+      <div class="card">
+        <div class="row">
+          <h3>${g==="NVF25"?"NVF25 – Gy25":"NVF24 – Gy11"}</h3>
+          <span class="tag">
+            ${items.reduce((sum,x)=>sum+x[1],0)} timmar
+          </span>
+        </div>
+        ${items.map(([name,hours])=>`
+          <div class="list-item row">
+            <span>${esc(name)}</span>
+            <strong>${hours} timmar</strong>
+          </div>
+        `).join("")}
+      </div>
+    `).join("")}
+
+    <div class="notice">
+      Timmarna visar planerad förläggning till APL.
+      De innebär inte att eleven har genomfört eller
+      fått momenten bedömda.
+    </div>
+  `;
+}
+
+function renderRecords(type){
+  const config={
+    visits:{
+      title:"APL-besök",
+      description:"Dokumentera besök och samtal med elever och handledare.",
+      label:"Anteckningar från besöket",
+      notice:"Registrerade besök är dokumentation, inte automatiskt en bedömning."
+    },
+    risks:{
+      title:"Riskbedömning",
+      description:"Samla underlag om risker, åtgärder och ansvar.",
+      label:"Risker, åtgärder och ansvarig",
+      notice:"Detta är ett underlag. Det ersätter inte en faktisk riskbedömning."
+    },
+    decisions:{
+      title:"APL-beslut",
+      description:"Samla information inför rektors beslut om APL.",
+      label:"Samråd, arbetsplats, kurser och planerade timmar",
+      notice:"Ett sparat underlag är inte ett fattat rektorsbeslut."
+    }
+  }[type];
+
+  return pageTop(config.title,config.description)+`
+    <div class="notice">${config.notice}</div>
+
+    <div class="card soft">
+      <h3>Nytt underlag</h3>
+      <form onsubmit="addRecord(event,'${type}')">
+        <div class="two-col">
+          <div>
+            <label>Elev
+              <select name="studentId">
+                ${data.students.map(s=>`
+                  <option value="${s.id}">${esc(s.name)}</option>
+                `).join("")}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label>Datum
+              <input name="date" type="date"
+                value="${dateToday()}" required>
+            </label>
+          </div>
+        </div>
+        <label>${config.label}
+          <textarea name="notes" required
+            placeholder="Skriv dina anteckningar här..."></textarea>
+        </label>
+        <button class="btn primary">Spara underlag</button>
+      </form>
+    </div>
+
+    <div class="section-title">
+      <h2>Sparade underlag</h2>
+    </div>
+
+    ${data[type].length?data[type].map(x=>`
+      <div class="card">
+        <div class="row">
+          <h3>${esc(student(x.studentId)?.name||"Okänd elev")}</h3>
+          <span class="tag">${esc(x.date)}</span>
+        </div>
+        <p class="muted">${esc(companyName(x.companyId))}</p>
+        <p>${esc(x.notes)}</p>
+      </div>
+    `).join(""):
+      `<div class="empty">Inga underlag sparade ännu.</div>`
+    }
+  `;
+}
+
+/* Företag */
+function addCompany(event){
+  event.preventDefault();
+  const f=new FormData(event.target);
+  data.companies.push({
+    id:"c"+Date.now(),
+    name:String(f.get("name")).trim(),
+    contact:String(f.get("contact")).trim(),
+    phone:String(f.get("phone")).trim(),
+    capacity:Number(f.get("capacity")),
+    status:"Inte kontaktad",
+    history:[]
+  });
+  save();
+  render();
+}
+function updateCompany(id,key,value){
+  const c=company(id);
+  if(!c)return;
+  c[key]=value;
+  save();
+  render();
+}
+function changeCapacity(id,value){
+  const c=company(id);
+  if(!c)return;
+  const n=Number(value);
+
+  if(!Number.isInteger(n)||n<1){
+    alert("Ange minst en plats.");
+    render();
+    return;
+  }
+
+  const assigned=data.students.filter(s=>s.company===id);
+  const tooFew=assigned.some(s=>occupied(c,s)+1>n);
+
+  if(tooFew){
+    alert("Det finns redan fler samtidigt placerade elever än så.");
+    render();
+    return;
+  }
+
+  c.capacity=n;
+  save();
+  render();
 }
 function addNote(id){
- let t=document.getElementById("note-"+id).value.trim();
- if(!t)return;
- company(id).history.unshift(
- new Date().toLocaleDateString("sv-SE")+" · "+t
- );
- save();render();
+  const c=company(id);
+  const field=document.getElementById("note-"+id);
+  if(!c||!field)return;
+
+  const note=field.value.trim();
+  if(!note)return;
+
+  c.history.unshift(
+    new Date().toLocaleDateString("sv-SE")+" · "+note
+  );
+  save();
+  render();
 }
-function place(id,cid){
- let s=student(id);
- if(cid){
- let c=company(cid);
- if(c.status!=="Tackat ja"){
- alert("Företaget måste ha tackat ja innan placering.");
- render();return;
- }
- if(occupied(c,s)>=c.capacity){
- alert("Företaget har inte plats för ytterligare en elev under dessa veckor.");
- render();return;
- }
- }
- s.company=cid;save();render();
+
+/* Placeringar */
+function place(id,companyId){
+  const s=student(id);
+  if(!s)return;
+
+  if(companyId){
+    const c=company(companyId);
+    if(!c){
+      alert("Företaget kunde inte hittas.");
+      render();
+      return;
+    }
+    if(c.status!=="Tackat ja"){
+      alert("Företaget måste ha tackat ja innan eleven placeras.");
+      render();
+      return;
+    }
+    if(occupied(c,s)>=Number(c.capacity)){
+      alert("Företaget har inte plats för fler elever under dessa veckor.");
+      render();
+      return;
+    }
+  }
+
+  s.company=companyId;
+  save();
+  render();
 }
+
+/* Lärarsvar */
 function reply(id){
- let r=data.reports.find(x=>x.id===id);
- r.reply=document.getElementById("reply-"+id).value;
- save();render();
+  const r=data.reports.find(x=>String(x.id)===String(id));
+  const field=document.getElementById("reply-"+id);
+  if(!r||!field)return;
+
+  r.reply=field.value.trim();
+  save();
+  render();
 }
-function addRecord(e,type){
- e.preventDefault();
- let f=new FormData(e.target);
- let s=student(f.get("studentId"));
- data[type].unshift({
- id:Date.now(),
- studentId:s.id,
- companyId:s.company,
- date:f.get("date"),
- notes:f.get("notes")
- });
- save();render();
+
+/* Besök och underlag */
+function addRecord(event,type){
+  event.preventDefault();
+  const f=new FormData(event.target);
+  const s=student(f.get("studentId"));
+  if(!s)return;
+
+  data[type].unshift({
+    id:"record-"+Date.now(),
+    studentId:s.id,
+    companyId:s.company,
+    date:String(f.get("date")),
+    notes:String(f.get("notes")).trim()
+  });
+  save();
+  render();
 }
+
+/* Elevvy */
 function renderStudent(){
- let s=student(studentId),weeks=groupWeeks(s);
- let html=`<div class="hero">
- <h2>Min APL</h2>
- <p>Här ser du din APL-plats och lämnar in dina veckorapporter.</p>
- </div>
- <label>Välj demoelev<select onchange="studentId=this.value;render()">
- ${data.students.map(x=>`<option value="${x.id}"
- ${x.id===studentId?"selected":""}>${esc(x.name)}</option>`).join("")}
- </select></label>
- <div class="grid">
- <div class="card soft"><h3>Min APL-plats</h3>
- <p>${esc(companyName(s.company))}</p>
- <p>APL-veckor: ${weeks.join(", ")}</p></div>
- <div class="card"><h3>Mina kurser</h3>
- ${courses[s.group.slice(0,5)].map(([n,h])=>
- `<p>${esc(n)} · ${h} timmar</p>`).join("")}</div>
- </div>
- <div class="card section"><h3>Min APL-vecka</h3>
- <form onsubmit="submitReport(event)">
- <label>Vecka<select name="week">
- ${weeks.map(w=>`<option value="${w}">${w}</option>`).join("")}
- </select></label>
- <label>Vad har du gjort?
- <textarea name="did" required></textarea></label>
- <label>Vad har du lärt dig?
- <textarea name="learned" required></textarea></label>
- <label>Vad var roligt eller svårt?
- <textarea name="feeling" required></textarea></label>
- <label>Hur var veckan? (1–5)
- <select name="rating">
- ${[1,2,3,4,5].map(n=>
- `<option value="${n}" ${n===4?"selected":""}>${n}</option>`
- ).join("")}</select></label>
- <button class="primary">Lämna in veckorapport</button>
- </form></div>
- <h3>Mina inlämnade rapporter</h3>
- ${data.reports.filter(r=>r.studentId===s.id).map(r=>
- `<div class="card"><strong>Vecka ${r.week}</strong>
- <p>${esc(r.did)}</p>
- <p><strong>Lärarens svar:</strong>
- ${esc(r.reply||"Inväntar svar")}</p></div>`
- ).join("")||"<p>Inga rapporter ännu.</p>"}
- <p class="muted small">Demoläge: välj elev för att prova.
- I en färdig app ska varje elev bara se sin egen information.</p>`;
- el.innerHTML=html;
+  const s=student(studentId)||data.students[0];
+  if(!s){
+    app.innerHTML="<p>Inga elever finns i demon.</p>";
+    return;
+  }
+  studentId=s.id;
+
+  const sw=weeks(s);
+  const courseKey=s.group.startsWith("NVF25")?"NVF25":"NVF24";
+  const myReports=data.reports.filter(r=>r.studentId===s.id);
+
+  app.innerHTML=`
+    <section class="hero">
+      <div class="eyebrow">Elevens sida</div>
+      <h1>Min APL.</h1>
+      <p>Här ser du din praktikplats, dina veckor
+      och lämnar in din veckorapport.</p>
+    </section>
+
+    <div class="card">
+      <label>Välj demoelev
+        <select onchange="studentId=this.value;render()">
+          ${data.students.map(x=>`
+            <option value="${x.id}" ${x.id===s.id?"selected":""}>
+              ${esc(x.name)}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    </div>
+
+    <div class="two-col">
+      <div class="card soft">
+        <div class="eyebrow">Min praktikplats</div>
+        <h2 style="margin-top:10px">
+          ${esc(companyName(s.company))}
+        </h2>
+        <p>APL-veckor: <strong>${sw.join(", ")}</strong></p>
+      </div>
+
+      <div class="card sage">
+        <div class="eyebrow">Mina kurser</div>
+        <div style="margin-top:12px">
+          ${courses[courseKey].map(([name,hours])=>`
+            <p>${esc(name)} · <strong>${hours} h</strong></p>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h2>Berätta om din vecka</h2>
+      <p class="muted">Det behöver inte vara långt. Skriv med egna ord.</p>
+    </div>
+
+    <div class="card">
+      <form onsubmit="submitReport(event)">
+        <label>Vilken vecka gäller det?
+          <select name="week">
+            ${sw.map(w=>`
+              <option value="${w}">Vecka ${w}</option>
+            `).join("")}
+          </select>
+        </label>
+
+        <label>Vad har du gjort den här veckan?
+          <textarea name="did" required
+            placeholder="Till exempel monterat rör, hjälpt till vid service..."></textarea>
+        </label>
+
+        <label>Vad har du lärt dig?
+          <textarea name="learned" required
+            placeholder="Något nytt du har provat eller förstått."></textarea>
+        </label>
+
+        <label>Vad har varit roligt eller svårt?
+          <textarea name="feeling" required
+            placeholder="Berätta hur veckan har varit."></textarea>
+        </label>
+
+        <label>Hur har veckan varit?
+          <select name="rating">
+            <option value="1">1 – Mycket svår</option>
+            <option value="2">2 – Ganska svår</option>
+            <option value="3">3 – Okej</option>
+            <option value="4" selected>4 – Bra</option>
+            <option value="5">5 – Jättebra</option>
+          </select>
+        </label>
+
+        <button class="btn primary" type="submit">
+          Lämna in veckorapport
+        </button>
+      </form>
+    </div>
+
+    <div class="section-title">
+      <h2>Mina rapporter</h2>
+    </div>
+
+    ${myReports.length?myReports.map(r=>`
+      <div class="card">
+        <div class="row">
+          <h3>Vecka ${esc(r.week)}</h3>
+          <span class="tag">${r.reply?"Besvarad":"Inlämnad"}</span>
+        </div>
+        <p>${esc(r.did)}</p>
+        <hr>
+        <strong>Lärarens svar</strong>
+        <p>${esc(r.reply||"Din lärare har inte svarat ännu.")}</p>
+      </div>
+    `).join(""):
+      `<div class="empty">Du har inte lämnat in någon rapport ännu.</div>`
+    }
+
+    <div class="notice small">
+      Detta är en demovy. I en färdig version ska
+      elever logga in och bara se sina egna uppgifter.
+    </div>
+    ${footer()}
+  `;
 }
-function submitReport(e){
- e.preventDefault();
- let f=new FormData(e.target),week=+f.get("week");
- if(data.reports.some(r=>
- r.studentId===studentId&&r.week===week
- )){
- alert("Du har redan lämnat in rapport för den veckan.");
- return;
- }
- data.reports.unshift({
- id:"r"+Date.now(),
- studentId,week,
- did:f.get("did"),
- learned:f.get("learned"),
- feeling:f.get("feeling"),
- rating:+f.get("rating"),
- reply:""
- });
- save();render();
+
+/* Elevens inlämning */
+function submitReport(event){
+  event.preventDefault();
+  const f=new FormData(event.target);
+  const week=Number(f.get("week"));
+
+  if(data.reports.some(r=>
+    r.studentId===studentId && Number(r.week)===week
+  )){
+    alert("Du har redan lämnat in en rapport för den veckan.");
+    return;
+  }
+
+  data.reports.unshift({
+    id:"r"+Date.now(),
+    studentId,
+    week,
+    did:String(f.get("did")).trim(),
+    learned:String(f.get("learned")).trim(),
+    feeling:String(f.get("feeling")).trim(),
+    rating:Number(f.get("rating")),
+    reply:""
+  });
+
+  save();
+  render();
+  alert("Din veckorapport är inlämnad!");
 }
+
 render();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
