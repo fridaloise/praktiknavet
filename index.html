@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praktiknavet</title>
+<style>
+:root{--pink:#f5dce4;--yellow:#f5d96f;--ink:#29272a;--bg:#faf8f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,sans-serif}
+header{background:var(--pink);padding:22px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:27px}h2{font-size:23px}
+small,.muted{color:#68646a}
+main{max-width:1050px;margin:auto;padding:25px 18px 70px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:1px solid #ded5d7;border-radius:12px;padding:12px 16px;background:white;color:var(--ink)}
+button:hover{background:#fff2bf}
+button.primary{background:var(--yellow);border-color:var(--yellow);font-weight:bold}
+button.active{background:var(--pink);border-color:#caaab6}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d8d1d3;border-radius:10px;background:white;margin:6px 0 12px}
+textarea{min-height:80px}
+label{display:block;font-weight:bold;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:white;border:1px solid #e8e1e3;border-radius:17px;padding:20px;margin-bottom:14px}
+.nav{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px}
+.tile{padding:25px;text-align:left;font-size:19px;font-weight:bold;min-height:95px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.tag{background:#fff2bd;border-radius:20px;padding:6px 10px;font-size:12px}
+.hidden{display:none}
+.notice{background:#fff4ce;padding:14px;border-radius:12px;margin:12px 0}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Praktiknavet <span style="color:#c49b00">♥</span></h1><small>APL utan krångel · Demonstration</small></div>
+<select id="role" style="width:auto;margin:0" onchange="setRole(this.value)">
+<option value="teacher">Lärare</option>
+<option value="student">Elev</option>
+</select>
+</header>
+<main id="app"></main>
+<script>
+const W={NVF25A:[3,4,5],NVF25B:[6,7,9],NVF24A:[10,11,12,14,15,16],NVF24B:[17,18,19,20,21]};
+const courses={
+NVF25:[["VVS och fastighet nivå 2",40],["VVS-teknik nivå 1",20],["VVS-teknik nivå 2",30],["VVS-installation nivå 1",20],["Försäljning och kundservice nivå 1",40]],
+NVF24:[["Entreprenadteknik",20],["Injusteringsteknik",30],["VVS gassvetsning rör",30],["VVS-teknik",130],["Värmeteknik 2",40]]
+};
+const demoStudents=[];
+for(const [group,n] of [["NVF25A",10],["NVF25B",10],["NVF24A",9],["NVF24B",8]]){
+for(let i=1;i<=n;i++)demoStudents.push({id:group+"-"+i,name:"Elev "+String(i).padStart(2,"0")+" · "+group,group,company:""});
+}
+const defaults={
+students:demoStudents,
+companies:[
+{id:"c1",name:"Exempel VVS AB",contact:"Anna Andersson",phone:"070-000 00 01",capacity:2,status:"Tackat ja",history:[]},
+{id:"c2",name:"Rör & Värme Demo",contact:"Erik Eriksson",phone:"070-000 00 02",capacity:1,status:"Kontaktad",history:[]}
+],
+reports:[],visits:[],risks:[],decisions:[]
+};
+let data;
+try{data=JSON.parse(localStorage.getItem("praktiknavet-tomas-v1"))||structuredClone(defaults)}catch(e){data=structuredClone(defaults)}
+let role="teacher",page="home",studentId=data.students[0].id;
+const save=()=>localStorage.setItem("praktiknavet-tomas-v1",JSON.stringify(data));
+const el=document.getElementById("app");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const student=id=>data.students.find(x=>x.id===id);
+const company=id=>data.companies.find(x=>x.id===id);
+const companyName=id=>company(id)?.name||"Inte placerad";
+const groupWeeks=s=>W[s.group]||[];
+const overlap=(a,b)=>a.some(w=>b.includes(w));
+const occupied=(c,s)=>data.students.filter(x=>x.id!==s.id&&x.company===c.id&&overlap(groupWeeks(x),groupWeeks(s))).length;
+function setRole(r){role=r;page="home";render()}
+function go(p){page=p;render()}
+function nav(){return `<div class="nav"><button onclick="go('home')">Startsida</button>${role==="teacher"?["companies","students","reports","todo","courses","visits","risks","decisions"].map((p,i)=>`<button class="${page===p?'active':''}" onclick="go('${p}')">${["Företag","Elever","Veckorapporter","Att göra","Kurser & APL-timmar","APL-besök","Riskbedömning","APL-beslut"][i]}</button>`).join(""):""}</div>`}
+function render(){
+document.getElementById("role").value=role;
+if(role==="student"){renderStudent();return}
+let html=nav();
+if(page==="home")html+=`<h2>Välkommen till Praktiknavet</h2><p class="muted">En gemensam plats för planering och uppföljning av APL.</p><div class="grid">${[["companies","Företag"],["students","Elever"],["reports","Veckorapporter"],["todo","Att göra"],["courses","Kurser & APL-timmar"],["visits","APL-besök"],["risks","Riskbedömning"],["decisions","APL-beslut"]].map(([p,n])=>`<button class="tile" onclick="go('${p}')">${n}</button>`).join("")}</div><p class="notice">Detta är en demo med fiktiva uppgifter. Ändringar sparas bara i din egen webbläsare.</p>`;
+if(page==="companies")html+=`<h2>Företag</h2><div class="card"><h3>Lägg till företag</h3><form onsubmit="addCompany(event)"><label>Företagets namn<input name="name" required></label><label>Kontaktperson<input name="contact"></label><label>Telefon<input name="phone"></label><label>Antal samtidiga platser<input name="capacity" type="number" min="1" value="1" required></label><button class="primary">Spara företag</button></form></div>${data.companies.map(c=>`<div class="card"><div class="row"><h3>${esc(c.name)}</h3><span class="tag">${esc(c.status)}</span></div><p>${esc(c.contact)} · ${esc(c.phone)}<br>Kapacitet: ${c.capacity} elever samtidigt</p><label>Status<select onchange="updateCompany('${c.id}','status',this.value)">${["Inte kontaktad","Kontaktad","Väntar svar","Tackat ja","Tackat nej"].map(x=>`<option ${x===c.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Antal platser<input type="number" min="1" value="${c.capacity}" onchange="changeCapacity('${c.id}',this.value)"></label><label>Kontaktanteckning<textarea id="note-${c.id}" placeholder="Vad kom ni överens om?"></textarea></label><button onclick="addNote('${c.id}')">Spara kontaktanteckning</button><p class="muted">${(c.history||[]).map(h=>esc(h)).join("<br>")}</p></div>`).join("")}`;
+if(page==="students")html+=`<h2>Elever och placeringar</h2><p>${data.students.filter(s=>s.company).length} av ${data.students.length} elever placerade.</p>${data.students.map(s=>`<div class="card"><div class="row"><strong>${esc(s.name)}</strong><span class="tag">Vecka ${groupWeeks(s).join(", ")}</span></div><p>${esc(companyName(s.company))}</p><select onchange="place('${s.id}',this.value)"><option value="">Ingen APL-plats</option>${data.companies.map(c=>`<option value="${c.id}" ${s.company===c.id?"selected":""}>${esc(c.name)} (${c.capacity} platser)</option>`).join("")}</select></div>`).join("")}`;
+if(page==="reports")html+=`<h2>Veckorapporter</h2>${data.reports.length?data.reports.map(r=>`<div class="card"><div class="row"><strong>${esc(student(r.studentId)?.name)}</strong><span class="tag">Vecka ${r.week}</span></div><p><strong>Gjort:</strong> ${esc(r.did)}</p><p><strong>Lärt mig:</strong> ${esc(r.learned)}</p><p><strong>Roligt eller svårt:</strong> ${esc(r.feeling)}</p><p>Veckans betyg: ${r.rating}/5</p><p><strong>Lärarens svar:</strong> ${esc(r.reply||"Inte besvarad")}</p><textarea id="reply-${r.id}" placeholder="Skriv svar till eleven">${esc(r.reply||"")}</textarea><button class="primary" onclick="reply('${r.id}')">Svara på rapport</button></div>`).join(""):"<div class='card'>Inga veckorapporter har lämnats in ännu.</div>"}`;
+if(page==="todo"){let unplaced=data.students.filter(s=>!s.company);let unanswered=data.reports.filter(r=>!r.reply);html+=`<h2>Att göra</h2><div class="grid"><div class="card"><h3>${unplaced.length} elever saknar plats</h3><p>${unplaced.slice(0,8).map(s=>esc(s.name)).join("<br>")}</p><button onclick="go('students')">Visa elever</button></div><div class="card"><h3>${unanswered.length} rapporter att besvara</h3><button onclick="go('reports')">Visa rapporter</button></div><div class="card"><h3>Företag att följa upp</h3>${data.companies.filter(c=>c.status==="Väntar svar"||c.status==="Kontaktad").map(c=>`<p>${esc(c.name)}</p>`).join("")||"Inga just nu"}</div><div class="card"><h3>APL-besök</h3><p>${data.visits.length} registrerade besök</p></div></div>`}
+if(page==="courses")html+=`<h2>Kurser & APL-timmar</h2>${Object.entries(courses).map(([g,items])=>`<div class="card"><h3>${g} · ${g==="NVF25"?"Gy25":"Gy11"}</h3>${items.map(([n,h])=>`<p>${esc(n)}: <strong>${h} timmar</strong></p>`).join("")}<strong>Totalt planerat: ${items.reduce((a,x)=>a+x[1],0)} timmar</strong></div>`).join("")}<p class="muted">Timmarna är planerad förläggning till APL, inte genomförda eller godkända timmar.</p>`;
+if(["visits","risks","decisions"].includes(page)){
+const titles={visits:"APL-besök",risks:"Riskbedömning",decisions:"APL-beslut – underlag"};
+html+=`<h2>${titles[page]}</h2><p class="notice">${page==="decisions"?"Här samlas underlag. Ett sparat underlag är inte ett rektorsbeslut.":page==="risks"?"En checklista ersätter inte en faktisk riskbedömning på arbetsplatsen.":"Registrera planerade eller genomförda besök."}</p><div class="card"><form onsubmit="addRecord(event,'${page}')"><label>Elev<select name="studentId">${data.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select></label><label>Datum<input name="date" type="date" required></label><label>${page==="visits"?"Lärare och anteckningar":page==="risks"?"Risker, åtgärder och ansvarig":"Samråd med arbetsplatsen, kursinnehåll och timmar"}<textarea name="notes" required></textarea></label><button class="primary">Spara underlag</button></form></div>${data[page].map(x=>`<div class="card"><strong>${esc(student(x.studentId)?.name)}</strong><p>${esc(x.date)} · ${esc(companyName(x.companyId))}</p><p>${esc(x.notes)}</p></div>`).join("")}`;
+}
+el.innerHTML=html;
+}
+function addCompany(e){e.preventDefault();let f=new FormData(e.target);data.companies.push({id:"c"+Date.now(),name:f.get("name"),contact:f.get("contact"),phone:f.get("phone"),capacity:+f.get("capacity"),status:"Inte kontaktad",history:[]});save();render()}
+function updateCompany(id,k,v){company(id)[k]=v;save();render()}
+function changeCapacity(id,v){let c=company(id),n=+v;if(n<1||data.students.some(s=>s.company===id&&occupied(c,s)+1>n)){alert("Kapaciteten kan inte sänkas under antalet samtidigt placerade elever.");render();return}c.capacity=n;save();render()}
+function addNote(id){let t=document.getElementById("note-"+id).value.trim();if(!t)return;company(id).history.unshift(new Date().toLocaleDateString("sv-SE")+" · "+t);save();render()}
+function place(id,cid){let s=student(id);if(cid){let c=company(cid);if(c.status!=="Tackat ja"){alert("Företaget måste ha tackat ja innan placering.");render();return}if(occupied(c,s)>=c.capacity){alert("Företaget har inte plats för ytterligare en elev under dessa veckor.");render();return}}s.company=cid;save();render()}
+function reply(id){let r=data.reports.find(x=>x.id===id);r.reply=document.getElementById("reply-"+id).value;save();render()}
+function addRecord(e,type){e.preventDefault();let f=new FormData(e.target),s=student(f.get("studentId"));data[type].unshift({id:Date.now(),studentId:s.id,companyId:s.company,date:f.get("date"),notes:f.get("notes")});save();render()}
+function renderStudent(){
+let s=student(studentId),weeks=groupWeeks(s);
+let html=`<h2>Min APL</h2><label>Välj demoelev<select onchange="studentId=this.value;render()">${data.students.map(x=>`<option value="${x.id}" ${x.id===studentId?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label><div class="grid"><div class="card"><h3>Min APL-plats</h3><p>${esc(companyName(s.company))}</p><p>APL-veckor: ${weeks.join(", ")}</p></div><div class="card"><h3>Mina kurser</h3>${courses[s.group.slice(0,5)].map(([n,h])=>`<p>${esc(n)} · ${h} h</p>`).join("")}</div></div><div class="card"><h3>Min APL-vecka</h3><form onsubmit="submitReport(event)"><label>Vecka<select name="week">${weeks.map(w=>`<option value="${w}">${w}</option>`).join("")}</select></label><label>Vad har du gjort?<textarea name="did" required></textarea></label><label>Vad har du lärt dig?<textarea name="learned" required></textarea></label><label>Vad var roligt eller svårt?<textarea name="feeling" required></textarea></label><label>Hur var veckan? (1–5)<select name="rating">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===4?"selected":""}>${n}</option>`).join("")}</select></label><button class="primary">Lämna in veckorapport</button></form></div><h3>Mina inlämnade rapporter</h3>${data.reports.filter(r=>r.studentId===s.id).map(r=>`<div class="card"><strong>Vecka ${r.week}</strong><p>${esc(r.did)}</p><p><strong>Lärarens svar:</strong> ${esc(r.reply||"Inväntar svar")}</p></div>`).join("")||"<p>Inga rapporter ännu.</p>"}<p class="muted">Demoläge: välj elev för att prova. I en färdig app ska varje elev bara se sin egen information.</p>`;
+el.innerHTML=html;
+}
+function submitReport(e){e.preventDefault();let f=new FormData(e.target),week=+f.get("week");if(data.reports.some(r=>r.studentId===studentId&&r.week===week)){alert("Du har redan lämnat in rapport för den veckan.");return}data.reports.unshift({id:"r"+Date.now(),studentId,week,did:f.get("did"),learned:f.get("learned"),feeling:f.get("feeling"),rating:+f.get("rating"),reply:""});save();render()}
+render();
+</script>
+</body>
+</html>
