@@ -1,0 +1,1276 @@
+
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praktiknavet – APL utan krångel</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink:#F9E4E9;
+  --card:#F1C9D3;
+  --header:#DDA6B6;
+  --deep:#A45368;
+  --yellow:#F5DA83;
+  --lightyellow:#FBE9AB;
+  --sage:#E1E5CF;
+  --ink:#533B46;
+  --line:#DDB7C2;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;background:var(--pink);color:var(--ink);
+  font-family:Quicksand,sans-serif;font-size:15px;
+  line-height:1.55;font-weight:500;
+}
+header {background:var(--header);padding:22px 20px}
+.header-inner {
+  max-width:1120px;margin:auto;display:flex;
+  justify-content:space-between;align-items:center;
+  gap:15px;flex-wrap:wrap;
+}
+.brand {font-size:34px;font-weight:700;letter-spacing:-1px}
+.subtitle {font-size:11px;letter-spacing:2px;font-weight:700}
+main {max-width:1120px;margin:25px auto;padding:0 18px 40px}
+h1 {font-size:29px;margin:0 0 8px}
+h2 {font-size:25px;margin:0 0 15px}
+h3 {font-size:19px;margin:0 0 12px}
+p {margin:8px 0 14px}
+.grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;margin:15px 0 25px;
+}
+.tile,.card {
+  border:1px solid var(--line);border-radius:20px;
+  padding:23px;color:var(--ink);
+}
+.tile {text-align:left;min-height:125px;cursor:pointer}
+.tile strong {display:block;font-size:20px}
+.tile small {display:block;margin-top:8px;font-family:Quicksand,sans-serif;font-size:13px;font-weight:600}
+.card {background:var(--card);margin-bottom:16px}
+.yellow {background:var(--lightyellow)}
+.sage {background:var(--sage)}
+.tile-pink {background:var(--card)}
+.tile-yellow {background:var(--yellow)}
+.tile-sage {background:var(--sage)}
+.btn {
+  background:var(--deep);color:white;border:0;
+  border-radius:12px;padding:11px 17px;
+  font:700 14px Quicksand;cursor:pointer;
+  margin:5px 5px 5px 0;
+}
+.btn.alt {background:var(--yellow);color:var(--ink)}
+.btn.back {background:var(--card);color:var(--ink);margin-bottom:20px}
+.btn:disabled {opacity:.5;cursor:not-allowed}
+label {display:block;font-weight:700;font-size:13px;margin:12px 0 5px}
+input,select,textarea {
+  display:block;width:100%;padding:11px;
+  border:1px solid #D6AEBB;border-radius:11px;
+  background:#F7DDE4;color:var(--ink);
+  font:inherit;
+}
+textarea {min-height:85px;resize:vertical}
+input[type=checkbox] {width:auto;display:inline}
+.fields {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+}
+.item {padding:13px 0;border-bottom:1px solid var(--line)}
+.item:last-child {border-bottom:0}
+.row {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.muted {color:#725A65;font-size:13px}
+.notice {
+  background:var(--lightyellow);padding:16px;
+  border-radius:15px;margin:16px 0;
+}
+.status {
+  display:inline-block;padding:5px 10px;border-radius:20px;
+  background:var(--yellow);font-size:12px;font-weight:700;
+}
+.status.good {background:var(--sage)}
+.big {font-size:30px;font-weight:700;color:#8D465B}
+.actions {display:flex;gap:8px;flex-wrap:wrap}
+footer {text-align:center;padding:25px;font-size:12px;color:#725A65}
+table {width:100%;border-collapse:collapse}
+td,th {padding:10px;border-bottom:1px solid var(--line);text-align:left}
+@media(max-width:600px) {
+  .brand {font-size:28px}
+  main {padding:0 12px}
+  .tile,.card {padding:16px}
+  .tile strong {font-size:17px}
+}
+@media print {
+  header,footer,.btn,.no-print {display:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand">Praktiknavet</div>
+      <div class="subtitle">APL UTAN KRÅNGEL</div>
+    </div>
+    <div>
+      <label for="role">Visa som</label>
+      <select id="role" onchange="changeRole(this.value)">
+        <option value="teacher">Lärare</option>
+        <option value="student">Elev</option>
+        <option value="supervisor">Handledare</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+<footer>Praktiknavet 4.3 · Testversion med fiktiva uppgifter 💗</footer>
+
+<script>
+"use strict";
+
+/* Samma lagringsnyckel som i Praktiknavet 4.1 */
+const KEY="praktiknavet-test-4-simple";
+
+const groups={
+  NVF25A:[3,4,5],
+  NVF25B:[6,7,9],
+  NVF24A:[10,11,12,14,15,16],
+  NVF24B:[17,18,19,20,21]
+};
+
+const courses={
+  NVF25:[
+    ["VVS och fastighet nivå 2",40],
+    ["VVS-teknik nivå 1",20],
+    ["VVS-teknik nivå 2",30],
+    ["VVS-installation nivå 1",20],
+    ["Försäljning och kundservice nivå 1",40]
+  ],
+  NVF24:[
+    ["Entreprenadteknik",20],
+    ["Injusteringsteknik",30],
+    ["VVS gassvetsning rör",30],
+    ["VVS-teknik",130],
+    ["Värmeteknik 2",40]
+  ]
+};
+
+const moments={
+  "VVS och fastighet nivå 2":[
+    "Beskriva hur VVS-system fungerar",
+    "Välja material och verktyg",
+    "Arbeta säkert och ergonomiskt",
+    "Samarbeta med andra yrkesgrupper"
+  ],
+  "VVS-teknik nivå 1":[
+    "Läsa en enkel VVS-ritning",
+    "Känna igen rör och kopplingar",
+    "Delta vid enklare fogning",
+    "Kontrollera utfört arbete"
+  ],
+  "VVS-teknik nivå 2":[
+    "Läsa ritningar och driftkort",
+    "Välja material och verktyg",
+    "Montera rör och kopplingar",
+    "Delta vid fogning",
+    "Felsöka och reparera",
+    "Göra funktionskontroll",
+    "Delta vid injustering",
+    "Dokumentera arbetet"
+  ],
+  "VVS-installation nivå 1":[
+    "Planera en installation",
+    "Montera rör och komponenter",
+    "Kontrollera täthet och funktion",
+    "Dokumentera arbetet"
+  ],
+  "Försäljning och kundservice nivå 1":[
+    "Bemöta kunder",
+    "Lyssna på kundens behov",
+    "Förklara en arbetsuppgift",
+    "Samarbeta med kollegor"
+  ],
+  "Entreprenadteknik":[
+    "Förstå byggprocessens olika steg",
+    "Läsa bygghandlingar",
+    "Planera arbetsuppgifter",
+    "Förstå entreprenadformer"
+  ],
+  "Injusteringsteknik":[
+    "Mäta flöden och temperaturer",
+    "Använda mätinstrument",
+    "Delta vid injustering",
+    "Dokumentera mätvärden"
+  ],
+  "VVS gassvetsning rör":[
+    "Känna till utrustning och risker",
+    "Förbereda arbetsstycken",
+    "Delta under handledning",
+    "Kontrollera arbetsmiljön"
+  ],
+  "VVS-teknik":[
+    "Läsa VVS-ritningar",
+    "Installera rörsystem",
+    "Felsöka",
+    "Kontrollera och dokumentera"
+  ],
+  "Värmeteknik 2":[
+    "Förstå värmesystem",
+    "Kontrollera temperatur och tryck",
+    "Felsöka värmesystem",
+    "Delta i drift och underhåll"
+  ]
+};
+
+const hazards=[
+  "Maskiner och verktyg",
+  "Heta arbeten och svetsning",
+  "Tunga lyft och ergonomi",
+  "Stegar och arbete på höjd",
+  "Elrisker",
+  "Kemikalier",
+  "Buller och vibrationer",
+  "Damm och ventilation",
+  "Ensamarbete",
+  "Stress och kränkningar",
+  "Bristande introduktion",
+  "Annat"
+];
+
+function defaults(){
+  const students=[];
+  const counts={NVF25A:10,NVF25B:10,NVF24A:9,NVF24B:8};
+  Object.entries(counts).forEach(([group,count])=>{
+    for(let i=1;i<=count;i++){
+      students.push({
+        id:group+"-"+i,
+        name:"Elev "+String(i).padStart(2,"0")+" – "+group,
+        group,companyId:"",supervisorId:""
+      });
+    }
+  });
+  return {
+    students,
+    companies:[
+      {id:"c1",name:"Exempel VVS AB",phone:"070-000 00 01",capacity:2,status:"Tackat ja"},
+      {id:"c2",name:"Rör & Värme Demo",phone:"070-000 00 02",capacity:2,status:"Tackat ja"}
+    ],
+    supervisors:[
+      {id:"h1",companyId:"c1",name:"Anna Andersson",
+       phone:"070-000 00 01",email:"anna@example.invalid",job:"VVS-montör"}
+    ],
+    time:{},progress:{},reports:[],risks:[],decisions:[],visits:[],contactLogs:[],capacities:[],timeApprovals:{}
+  };
+}
+
+let data;
+try {
+  data={...defaults(),...JSON.parse(localStorage.getItem(KEY)||"{}")};
+} catch(e) {
+  data=defaults();
+}
+
+if(!Array.isArray(data.students))data.students=defaults().students;
+if(!Array.isArray(data.companies))data.companies=[];
+if(!Array.isArray(data.supervisors))data.supervisors=[];
+if(!Array.isArray(data.reports))data.reports=[];
+if(!Array.isArray(data.risks))data.risks=[];
+if(!Array.isArray(data.decisions))data.decisions=[];
+if(!Array.isArray(data.visits))data.visits=[];
+if(!Array.isArray(data.contactLogs))data.contactLogs=[];
+if(!Array.isArray(data.capacities))data.capacities=[];
+if(!data.timeApprovals || typeof data.timeApprovals!=="object")data.timeApprovals={};
+if(!data.time || typeof data.time!=="object")data.time={};
+if(!data.progress || typeof data.progress!=="object")data.progress={};
+
+let role="teacher";
+let page="home";
+let selected=data.students[0]?.id||"";
+let selectedSupervisor=data.supervisors[0]?.id||"";
+let week=3;
+let companySearch="";
+let companyFilter="Alla";
+let aplPeriod="HT 2026";
+
+const el=id=>document.getElementById(id);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pupil=id=>data.students.find(s=>s.id===id);
+const company=id=>data.companies.find(c=>c.id===id);
+const supervisor=id=>data.supervisors.find(h=>h.id===id);
+const courseList=s=>courses[s.group.slice(0,5)]||[];
+
+function safe(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function save(){
+  try {
+    localStorage.setItem(KEY,JSON.stringify(data));
+    return true;
+  } catch(e) {
+    alert("Det gick inte att spara i webbläsaren. Kontrollera lagringsutrymmet.");
+    return false;
+  }
+}
+
+function options(items,value,label){
+  return items.map(x=>`
+    <option value="${safe(x.id)}" ${x.id===value?"selected":""}>
+      ${safe(label(x))}
+    </option>
+  `).join("");
+}
+
+function changeRole(value){
+  role=value;page="home";render();
+}
+function go(value){
+  page=value;render();window.scrollTo(0,0);
+}
+function back(){
+  return `<button class="btn back" onclick="go('home')">Tillbaka</button>`;
+}
+function tile(name,desc,target,color){
+  return `<button class="tile ${color}" onclick="go('${target}')">
+    <strong>${name}</strong><small>${desc}</small>
+  </button>`;
+}
+
+function render(){
+  el("app").innerHTML=role==="teacher"
+    ?teacherView()
+    :role==="student"?studentView():supervisorView();
+}
+
+/* SÄKERHETSKOPIERING */
+
+function downloadBackup(){
+  try {
+    const backup={
+      application:"Praktiknavet",
+      version:1,
+      created:new Date().toISOString(),
+      data:JSON.parse(JSON.stringify(data))
+    };
+    const blob=new Blob(
+      [JSON.stringify(backup,null,2)],
+      {type:"application/json"}
+    );
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="praktiknavet-sakerhetskopia-"+
+      new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  } catch(e) {
+    alert("Det gick inte att skapa säkerhetskopian.");
+  }
+}
+
+function restoreBackup(){
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept=".json,application/json";
+  input.onchange=async()=>{
+    if(!input.files?.length)return;
+    try {
+      const backup=JSON.parse(await input.files[0].text());
+      if(
+        backup.application!=="Praktiknavet" ||
+        backup.version!==1 ||
+        !backup.data ||
+        !Array.isArray(backup.data.students) ||
+        !Array.isArray(backup.data.companies) ||
+        !Array.isArray(backup.data.supervisors) ||
+        !Array.isArray(backup.data.reports) ||
+        !Array.isArray(backup.data.risks) ||
+        !Array.isArray(backup.data.decisions) ||
+        !Array.isArray(backup.data.visits) ||
+        !backup.data.time ||
+        !backup.data.progress
+      ){
+        throw new Error("Felaktig säkerhetskopia");
+      }
+      if(!confirm(
+        "Vill du återställa säkerhetskopian?\n\n"+
+        "Nuvarande uppgifter i webbläsaren ersätts.\n"+
+        "Spara gärna en kopia av dem först."
+      ))return;
+      localStorage.setItem(KEY,JSON.stringify(backup.data));
+      alert("Säkerhetskopian är återställd!");
+      location.reload();
+    } catch(e) {
+      alert("Kunde inte återställa filen. Kontrollera att det är en giltig säkerhetskopia.");
+    }
+  };
+  input.click();
+}
+
+/* LÄRARE */
+
+function teacherView(){
+  if(page==="home")return `
+    <h1>Hej och välkommen!</h1>
+    <p>Vad vill du göra idag?</p>
+    <div class="grid">
+      ${tile("Företag","Kontakter och handledare","companies","tile-pink")}
+      ${tile("Elever","Placeringar och uppföljning","students","tile-yellow")}
+      ${tile("Veckorapporter","Elevernas arbete","reports","tile-yellow")}
+      ${tile("Att göra","Det som behöver följas upp","todo","tile-pink")}
+      ${tile("Kurser och APL-timmar","Planerade kursdelar","courses","tile-sage")}
+      ${tile("APL-besök","Besök och anteckningar","visits","tile-pink")}
+      ${tile("Riskbedömning","Risker och åtgärder","risks","tile-yellow")}
+      ${tile("APL-beslut","Samråd och rektorsbeslut","decisions","tile-sage")}
+    </div>
+    <div class="card sage">
+      <h3>Säkerhetskopiering 💗</h3>
+      <p>Spara en kopia av allt du registrerat i testversionen.</p>
+      <button class="btn" onclick="downloadBackup()">Spara säkerhetskopia</button>
+      <button class="btn alt" onclick="restoreBackup()">Återställ säkerhetskopia</button>
+      <p class="muted">
+        Uppgifterna sparas automatiskt i denna webbläsare.
+        Ladda ner säkerhetskopior regelbundet och förvara dem säkert.
+      </p>
+    </div>
+    <div class="notice">
+      <strong>Öppen testversion med fiktiva uppgifter.</strong>
+      <p>Ingen riktig inloggning eller säker databas ännu.
+      Använd inte riktiga elevuppgifter eller personliga kontaktuppgifter.</p>
+    </div>
+  `;
+  if(page==="companies")return companiesView();
+  if(page==="students")return studentsView();
+  if(page==="detail")return detailView();
+  if(page==="reports")return reportsView();
+  if(page==="todo")return todoView();
+  if(page==="courses")return coursesView();
+  if(page==="visits")return visitsView();
+  if(page==="risks")return risksView();
+  if(page==="decisions")return decisionsView();
+  return "";
+}
+
+/* FÖRETAG */
+
+function companiesView(){
+  const filtered=data.companies.filter(c=>
+    c.name.toLowerCase().includes(companySearch.toLowerCase()) &&
+    (companyFilter==="Alla"||c.status===companyFilter)
+  );
+  return `
+    ${back()}
+    <h2>Företag och handledare</h2>
+    <div class="card yellow">
+      <h3>Lägg till företag</h3>
+      <form onsubmit="addCompany(event)">
+        <label>Företagsnamn</label>
+        <input name="name" required>
+        <div class="fields">
+          <div><label>Telefon</label><input name="phone"></div>
+          <div><label>APL-platser</label>
+          <input name="capacity" type="number" min="0" value="1"></div>
+        </div>
+        <label>Status</label>
+        <select name="status">
+          <option>Inte kontaktad</option>
+          <option>Kontaktad</option>
+          <option>Väntar på svar</option>
+          <option>Tackat ja</option>
+          <option>Tackat nej</option>
+        </select>
+        <button class="btn">Spara företag</button>
+      </form>
+    </div>
+    <div class="card sage">
+      <h3>Hitta företag</h3>
+      <label>Sök på företagsnamn</label>
+      <input id="company-search" value="${safe(companySearch)}"
+        oninput="companySearch=this.value;updateCompanyList()"
+        placeholder="Sök företag...">
+      <label>Visa status</label>
+      <select onchange="companyFilter=this.value;updateCompanyList()">
+        ${["Alla","Inte kontaktad","Kontaktad","Väntar på svar","Tackat ja","Tackat nej"].map(s=>
+          `<option ${s===companyFilter?"selected":""}>${s}</option>`
+        ).join("")}
+      </select>
+    </div>
+    <div id="company-list">${companyCards(filtered)}</div>
+  `;
+}
+
+function updateCompanyList(){
+  const filtered=data.companies.filter(c=>
+    c.name.toLowerCase().includes(companySearch.toLowerCase()) &&
+    (companyFilter==="Alla"||c.status===companyFilter)
+  );
+  el("company-list").innerHTML=companyCards(filtered);
+}
+
+function companyCards(items){
+  if(!items.length)return `<div class="card">Inga företag hittades.</div>`;
+  return items.map(c=>`
+    <div class="card">
+      <h3>${safe(c.name)}</h3>
+      <p>Telefon: ${safe(c.phone)||"Saknas"}</p>
+      <p>APL-platser (grundantal): ${Number(c.capacity)||0}</p>
+      <h3>Huvudkontakt</h3>
+      <form onsubmit="saveMainContact(event,'${c.id}')">
+        <div class="fields">
+          <div><label>Namn</label><input name="contactName" value="${safe(c.contactName)}"></div>
+          <div><label>Telefon</label><input name="contactPhone" value="${safe(c.contactPhone)}"></div>
+          <div><label>E-post</label><input name="contactEmail" type="email" value="${safe(c.contactEmail)}"></div>
+        </div>
+        <button class="btn alt">Spara huvudkontakt</button>
+      </form>
+      <h3>APL-platser per termin</h3>
+      <form onsubmit="saveCapacity(event,'${c.id}')">
+        <div class="fields">
+          <div><label>Termin</label><select name="period">${["HT 2026","VT 2027","HT 2027","VT 2028","HT 2028","VT 2029"].map(p=>`<option>${p}</option>`).join("")}</select></div>
+          <div><label>Antal platser</label><input type="number" min="0" name="count" value="0" required></div>
+        </div>
+        <button class="btn alt">Spara platser</button>
+      </form>
+      ${data.capacities.filter(x=>x.companyId===c.id).map(x=>`<p>${safe(x.period)}: <strong>${Number(x.count)||0} platser</strong></p>`).join("")||'<p class="muted">Inga terminsplatser registrerade.</p>'}
+      <h3>Kontaktanteckningar</h3>
+      <form onsubmit="addContactLog(event,'${c.id}')">
+        <div class="fields">
+          <div><label>Datum</label><input name="date" type="date" required></div>
+          <div><label>Antecknat av</label><input name="author" required></div>
+        </div>
+        <label>Vad pratade ni om?</label><textarea name="notes" required></textarea>
+        <button class="btn alt">Spara anteckning</button>
+      </form>
+      ${data.contactLogs.filter(x=>x.companyId===c.id).slice().reverse().map(x=>`<div class="item"><strong>${safe(x.date)} – ${safe(x.author)}</strong><p>${safe(x.notes)}</p></div>`).join("")||'<p class="muted">Inga anteckningar ännu.</p>'}
+      <p>Status: <span class="status ${c.status==="Tackat ja"?"good":""}">
+        ${safe(c.status)}
+      </span></p>
+      <form onsubmit="updateCompany(event,'${c.id}')">
+        <div class="fields">
+          <div>
+            <label>Ändra antal platser</label>
+            <input name="capacity" type="number" min="0"
+              value="${Number(c.capacity)||0}">
+          </div>
+          <div>
+            <label>Ändra status</label>
+            <select name="status">
+              ${["Inte kontaktad","Kontaktad","Väntar på svar","Tackat ja","Tackat nej"].map(s=>
+                `<option ${s===c.status?"selected":""}>${s}</option>`
+              ).join("")}
+            </select>
+          </div>
+        </div>
+        <button class="btn alt">Uppdatera företag</button>
+      </form>
+      <h3 style="margin-top:20px">Handledare</h3>
+      ${data.supervisors.filter(h=>h.companyId===c.id).map(h=>`
+        <div class="item">
+          <strong>${safe(h.name)}</strong>
+          <p>${safe(h.job)}<br>${safe(h.phone)}<br>${safe(h.email)}</p>
+        </div>
+      `).join("")||"<p>Ingen handledare registrerad.</p>"}
+      <form onsubmit="addSupervisor(event,'${c.id}')">
+        <label>Handledarens namn</label>
+        <input name="name" required>
+        <div class="fields">
+          <div><label>Telefon</label><input name="phone"></div>
+          <div><label>E-post</label><input name="email" type="email"></div>
+        </div>
+        <label>Yrkesroll</label>
+        <input name="job" placeholder="Exempel: VVS-montör">
+        <button class="btn alt">Lägg till handledare</button>
+      </form>
+    </div>
+  `).join("");
+}
+
+function addCompany(e){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  data.companies.push({
+    id:uid(),name:String(f.get("name")).trim(),
+    phone:f.get("phone"),capacity:Number(f.get("capacity"))||0,
+    status:f.get("status")
+  });
+  if(save())render();
+}
+
+function updateCompany(e,cid){
+  e.preventDefault();
+  const c=company(cid);
+  if(!c)return;
+  const f=new FormData(e.target);
+  c.capacity=Number(f.get("capacity"))||0;
+  c.status=f.get("status");
+  if(save())render();
+}
+
+function addSupervisor(e,cid){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  data.supervisors.push({
+    id:uid(),companyId:cid,name:f.get("name"),
+    phone:f.get("phone"),email:f.get("email"),job:f.get("job")
+  });
+  if(save())render();
+}
+
+function saveMainContact(e,cid){
+  e.preventDefault();const c=company(cid);if(!c)return;
+  const f=new FormData(e.target);
+  c.contactName=String(f.get("contactName")||"").trim();
+  c.contactPhone=String(f.get("contactPhone")||"").trim();
+  c.contactEmail=String(f.get("contactEmail")||"").trim();
+  if(save())render();
+}
+function saveCapacity(e,cid){
+  e.preventDefault();const f=new FormData(e.target),period=String(f.get("period"));
+  let x=data.capacities.find(x=>x.companyId===cid&&x.period===period);
+  if(!x){x={id:uid(),companyId:cid,period};data.capacities.push(x)}
+  x.count=Number(f.get("count"))||0;if(save())render();
+}
+function addContactLog(e,cid){
+  e.preventDefault();const f=new FormData(e.target);
+  data.contactLogs.push({id:uid(),companyId:cid,date:String(f.get("date")),author:String(f.get("author")).trim(),notes:String(f.get("notes")).trim()});
+  if(save())render();
+}
+
+/* ELEVER OCH PLACERINGAR */
+
+function studentsView(){
+  return `
+    ${back()}<h2>Elever</h2>
+    <div class="card yellow">
+      <label>Välj klass</label>
+      <select onchange="showGroup(this.value)">
+        <option value="all">Alla klasser</option>
+        ${Object.keys(groups).map(g=>`<option>${g}</option>`).join("")}
+      </select>
+    </div>
+    <div id="student-list">${studentRows("all")}</div>
+  `;
+}
+function showGroup(group){
+  el("student-list").innerHTML=studentRows(group);
+}
+function studentRows(group){
+  return `<div class="card">
+    ${data.students.filter(s=>group==="all"||s.group===group).map(s=>`
+      <div class="item row">
+        <div>
+          <strong>${safe(s.name)}</strong>
+          <div class="muted">${safe(company(s.companyId)?.name||"Ingen APL-plats")}</div>
+        </div>
+        <button class="btn alt" onclick="selected='${s.id}';go('detail')">
+          Öppna
+        </button>
+      </div>
+    `).join("")}
+  </div>`;
+}
+
+function detailView(){
+  const s=pupil(selected);
+  if(!s)return back()+"Eleven hittades inte.";
+  const available=data.supervisors.filter(h=>h.companyId===s.companyId);
+  return `
+    ${back()}<h2>${safe(s.name)}</h2>
+    <div class="card yellow">
+      <h3>APL-placering</h3>
+      <p>Planerade veckor: ${(groups[s.group]||[]).join(", ")}</p>
+      <label>Företag</label>
+      <select onchange="assignCompany(this.value)">
+        <option value="">Ingen placering</option>
+        ${options(data.companies,s.companyId,c=>c.name)}
+      </select>
+      <label>Handledare</label>
+      <select onchange="assignSupervisor(this.value)">
+        <option value="">Välj handledare</option>
+        ${options(available,s.supervisorId,h=>h.name)}
+      </select>
+      <p class="muted">Placeringen ska kontrolleras mot företagets överenskommelse.</p>
+    </div>
+    <div class="card">
+      <h3>APL-underlag</h3>
+      <p>APL-plats: <strong>${s.companyId?"Registrerad":"Saknas"}</strong></p>
+      <p>Handledare: <strong>${s.supervisorId?"Registrerad":"Saknas"}</strong></p>
+      <p>Riskunderlag: <strong>${data.risks.some(r=>r.studentId===s.id)?"Registrerat":"Saknas"}</strong></p>
+      <p>Rektorsbeslut: <strong>${data.decisions.some(d=>d.studentId===s.id&&d.approved)?"Registrerat":"Saknas"}</strong></p>
+      <p class="muted">Registrering innebär inte att arbetsplatsen formellt godkänts.</p>
+    </div>
+    <div class="card">
+      <h3>Elevens arbetsmoment</h3>
+      ${momentList(s)}
+    </div>
+    <div class="card sage">
+      <h3>Rapporterade timmar</h3>
+      <div class="big">${totalHours(s.id)} timmar</div>
+      <h3>Godkännande av veckor</h3>
+      ${(groups[s.group]||[]).map(w=>{
+        const a=data.timeApprovals[s.id+"|"+w];
+        return `<div class="item"><strong>Vecka ${w}</strong> – ${approvalLabel(a)}
+          ${a?.comment?`<p>${safe(a.comment)}</p>`:""}
+          ${a?.status==="approved"?`<button class="btn alt" onclick="reopenWeek('${s.id}',${w})">Öppna veckan igen</button>`:""}
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function assignCompany(cid){
+  const s=pupil(selected);
+  if(!s)return;
+  if(cid){
+    const c=company(cid);
+    if(!c||c.status!=="Tackat ja"){
+      alert("Företaget måste ha tackat ja.");
+      render();return;
+    }
+    const used=data.students.filter(other=>
+      other.id!==s.id &&
+      other.companyId===cid &&
+      (groups[other.group]||[]).some(w=>
+        (groups[s.group]||[]).includes(w))
+    ).length;
+    if(used>=Number(c.capacity||0)){
+      alert("Inga lediga platser under dessa veckor.");
+      render();return;
+    }
+  }
+  s.companyId=cid;s.supervisorId="";
+  if(save())render();
+}
+function assignSupervisor(hid){
+  const s=pupil(selected),h=supervisor(hid);
+  if(!s)return;
+  if(hid&&(!h||h.companyId!==s.companyId))return;
+  s.supervisorId=hid;
+  if(save())render();
+}
+
+function momentList(s){
+  return courseList(s).map(([course])=>`
+    <div class="item">
+      <h3>${safe(course)}</h3>
+      ${(moments[course]||[]).map((m,i)=>{
+        const key=s.id+"|"+course+"|"+i;
+        const value=data.progress[key]||"";
+        return `<div class="item">
+          <div>${safe(m)}</div>
+          <select onchange="setMoment('${safe(key)}',this.value)">
+            <option value="" ${!value?"selected":""}>Inte gjort ännu</option>
+            <option value="seen" ${value==="seen"?"selected":""}>Jag har sett det</option>
+            <option value="done" ${value==="done"?"selected":""}>Jag har utfört det</option>
+          </select>
+        </div>`;
+      }).join("")}
+    </div>
+  `).join("")+`<p class="muted">Elevens markering är inte ett betyg.</p>`;
+}
+function setMoment(key,value){
+  data.progress[key]=value;save();
+}
+function approvalLabel(a){
+  return !a?"Inte inskickad":a.status==="submitted"?"Väntar på handledare":a.status==="approved"?"Godkänd":a.status==="changes"?"Behöver ändras":"Inte inskickad";
+}
+function reopenWeek(sid,w){
+  if(!confirm("Öppna vecka "+w+" för ändringar?"))return;
+  delete data.timeApprovals[sid+"|"+w];if(save())render();
+}
+function submitWeek(){
+  const s=pupil(selected),key=s.id+"|"+week,days=data.time[key];
+  if(!days||days.length!==5||days.some(d=>!d.status)){
+    alert("Fyll i och spara alla fem dagar först.");return;
+  }
+  if(!s.supervisorId){alert("En handledare måste vara kopplad till eleven först.");return;}
+  if(!confirm("Skicka vecka "+week+" till handledaren för godkännande?"))return;
+  data.timeApprovals[key]={status:"submitted",submittedAt:new Date().toISOString()};
+  if(save())render();
+}
+function approveWeek(sid,w,hid,decision){
+  const s=pupil(sid),key=sid+"|"+w,a=data.timeApprovals[key];
+  if(!s||s.supervisorId!==hid||!a||a.status!=="submitted")return;
+  const comment=el("approval-comment-"+sid+"-"+w)?.value.trim()||"";
+  if(decision==="changes"&&!comment){alert("Skriv vad eleven behöver ändra.");return;}
+  data.timeApprovals[key]={...a,status:decision,comment,approvedBy:hid,reviewedAt:new Date().toISOString()};
+  if(save())render();
+}
+function totalHours(sid){
+  return Object.entries(data.time)
+    .filter(([key])=>key.startsWith(sid+"|"))
+    .reduce((sum,[,days])=>sum+
+      (Array.isArray(days)?days:[]).reduce((n,d)=>
+        n+(d.status==="present"?(Number(d.hours)||0):0),0),0);
+}
+
+/* ELEVENS VY */
+
+function studentView(){
+  const s=pupil(selected)||data.students[0];
+  if(!s)return "<h2>Inga elever registrerade.</h2>";
+  if(page==="home")return `
+    <h1>Hej och välkommen!</h1>
+    <p>Här hittar du allt om din APL.</p>
+    <div class="notice">
+      Demoläge. I den riktiga versionen ska eleven identifieras
+      genom skolans Google-inloggning.
+    </div>
+    <div class="card">
+      <label>Visa som elev</label>
+      <select onchange="selected=this.value;render()">
+        ${options(data.students,s.id,x=>x.name)}
+      </select>
+      <h3 style="margin-top:20px">${safe(s.name)}</h3>
+      <p>APL-plats: ${safe(company(s.companyId)?.name||"Inte placerad")}</p>
+      <p>Handledare: ${safe(supervisor(s.supervisorId)?.name||"Inte utsedd")}</p>
+      <p>Telefon: ${safe(supervisor(s.supervisorId)?.phone||
+        company(s.companyId)?.phone||"Saknas")}</p>
+    </div>
+    <div class="grid">
+      ${tile("Min tidrapport","Timmar och frånvaro","time","tile-yellow")}
+      ${tile("Mina arbetsmoment","Det jag sett och utfört","moments","tile-pink")}
+      ${tile("Min veckorapport","Berätta om veckan","weekly","tile-sage")}
+    </div>
+  `;
+  if(page==="time")return timeView();
+  if(page==="moments")return `
+    ${back()}<h2>Mina arbetsmoment</h2>
+    <div class="card">${momentList(s)}</div>
+  `;
+  if(page==="weekly")return weeklyView();
+  return "";
+}
+
+function weekPicker(){
+  const s=pupil(selected);
+  return `<label>Vecka</label>
+    <select onchange="week=Number(this.value);render()">
+      ${(groups[s.group]||[]).map(w=>`
+        <option value="${w}" ${w===week?"selected":""}>Vecka ${w}</option>
+      `).join("")}
+    </select>`;
+}
+
+function timeView(){
+  const s=pupil(selected);
+  if(!(groups[s.group]||[]).includes(week))week=groups[s.group][0];
+  const days=data.time[s.id+"|"+week]||
+    Array.from({length:5},()=>({status:"",hours:""}));
+  const names=["Måndag","Tisdag","Onsdag","Torsdag","Fredag"];
+  const approval=data.timeApprovals[s.id+"|"+week];
+  const locked=approval?.status==="approved"||approval?.status==="submitted";
+  return `
+    ${back()}<h2>Min tidrapport</h2>
+    <div class="card">
+      ${weekPicker()}
+      <p><strong>Status:</strong> ${approvalLabel(approval)}</p>
+      ${approval?.comment?`<div class="notice"><strong>Handledarens kommentar:</strong><p>${safe(approval.comment)}</p></div>`:""}
+      ${locked?'<p class="muted">Veckan är låst tills handledaren eller läraren öppnar den.</p>':""}
+      <form onsubmit="saveTime(event)">
+        ${days.map((d,i)=>`
+          <div class="item">
+            <h3>${names[i]}</h3>
+            <label>Närvaro</label>
+            <select name="status${i}" ${locked?"disabled":""}>
+              ${[
+                ["","Välj"],["present","På APL"],
+                ["sick","Sjuk"],["absent","Annan frånvaro"],
+                ["free","Ledig enligt schema"]
+              ].map(([v,t])=>`
+                <option value="${v}" ${d.status===v?"selected":""}>${t}</option>
+              `).join("")}
+            </select>
+            <label>Arbetade timmar, utan rast</label>
+            <input name="hours${i}" type="number" min="0" max="24"
+              step="0.25" value="${safe(d.hours)}" ${locked?"disabled":""}>
+          </div>
+        `).join("")}
+        <div class="notice">
+          <h3>Viktigt om du är sjuk!</h3>
+          <p>Ring din APL-plats och meddela att du inte kommer.
+          Sjukanmäl dig också till skolan enligt vanliga rutiner.</p>
+          <p>Telefon: <strong>${safe(supervisor(s.supervisorId)?.phone||
+            company(s.companyId)?.phone||"Kontakta din lärare")}</strong></p>
+          <label><input type="checkbox" name="called">
+            Jag har meddelat APL-platsen vid frånvaro</label>
+        </div>
+        ${locked?"":'<button class="btn">Spara tidrapport</button>'}
+      </form>
+      ${!locked&&data.time[s.id+"|"+week]?'<button class="btn alt" onclick="submitWeek()">Skicka veckan till handledaren</button>':""}
+
+    </div>
+    <div class="card sage">
+      <h3>Totalt rapporterad APL-tid</h3>
+      <div class="big">${totalHours(s.id)} timmar</div>
+    </div>
+  `;
+}
+
+function saveTime(e){
+  e.preventDefault();
+  const approval=data.timeApprovals[selected+"|"+week];
+  if(approval?.status==="approved"||approval?.status==="submitted"){
+    alert("Veckan är låst.");return;
+  }
+  const f=new FormData(e.target),days=[];
+  for(let i=0;i<5;i++){
+    const status=f.get("status"+i);
+    const hours=Number(f.get("hours"+i)||0);
+    if(status==="present"&&hours<=0){
+      alert("Ange arbetade timmar för närvarodagar.");return;
+    }
+    days.push({status,hours:status==="present"?hours:0});
+  }
+  if(days.some(d=>d.status==="sick"||d.status==="absent")&&!f.has("called")){
+    if(!confirm("Har du meddelat APL-platsen? Tidrapporten ersätter inte sjukanmälan."))return;
+  }
+  data.time[selected+"|"+week]=days;
+  if(approval?.status==="changes")delete data.timeApprovals[selected+"|"+week];
+  if(save()){
+    render();
+    alert("Tidrapporten är sparad i testversionen.");
+  }
+}
+
+function weeklyView(){
+  const s=pupil(selected);
+  if(!(groups[s.group]||[]).includes(week))week=groups[s.group][0];
+  const old=data.reports.find(r=>r.studentId===selected&&r.week===week);
+  return `
+    ${back()}<h2>Min veckorapport</h2>
+    <div class="card">
+      ${weekPicker()}
+      <form onsubmit="saveReport(event)">
+        <label>Vad har du arbetat med?</label>
+        <textarea name="work" required>${safe(old?.work)}</textarea>
+        <label>Vad har du lärt dig?</label>
+        <textarea name="learn">${safe(old?.learn)}</textarea>
+        <label>Vad behöver du hjälp med?</label>
+        <textarea name="help">${safe(old?.help)}</textarea>
+        <button class="btn">Spara veckorapport</button>
+      </form>
+      ${old?.reply?`<div class="notice">
+        <strong>Lärarens kommentar</strong>
+        <p>${safe(old.reply)}</p>
+      </div>`:""}
+    </div>
+  `;
+}
+
+function saveReport(e){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  let r=data.reports.find(x=>x.studentId===selected&&x.week===week);
+  if(!r){
+    r={id:uid(),studentId:selected,week};
+    data.reports.push(r);
+  }
+  r.work=f.get("work");
+  r.learn=f.get("learn");
+  r.help=f.get("help");
+  if(save()){
+    render();
+    alert("Veckorapporten är sparad.");
+  }
+}
+
+/* RAPPORTER */
+
+function reportsView(){
+  return `
+    ${back()}<h2>Veckorapporter</h2>
+    <div class="card">
+      ${data.reports.length?data.reports.slice().reverse().map(r=>`
+        <div class="item">
+          <h3>${safe(pupil(r.studentId)?.name)} – vecka ${r.week}</h3>
+          <p><strong>Arbetat med:</strong> ${safe(r.work)}</p>
+          <p><strong>Lärt sig:</strong> ${safe(r.learn)}</p>
+          <p><strong>Behöver hjälp:</strong> ${safe(r.help)}</p>
+          <label>Lärarens kommentar</label>
+          <textarea id="reply-${r.id}">${safe(r.reply)}</textarea>
+          <button class="btn alt" onclick="saveReply('${r.id}')">
+            Spara kommentar
+          </button>
+        </div>
+      `).join(""):"<p>Inga rapporter ännu.</p>"}
+    </div>
+  `;
+}
+function saveReply(rid){
+  const r=data.reports.find(x=>x.id===rid);
+  if(!r)return;
+  r.reply=el("reply-"+rid).value;
+  if(save())render();
+}
+
+/* ATT GÖRA */
+
+function todoView(){
+  const unplaced=data.students.filter(s=>!s.companyId).length;
+  const noSupervisor=data.students.filter(s=>s.companyId&&!s.supervisorId).length;
+  const noRisk=data.students.filter(s=>s.companyId&&!data.risks.some(r=>r.studentId===s.id)).length;
+  const noDecision=data.students.filter(s=>s.companyId&&!data.decisions.some(d=>d.studentId===s.id&&d.approved)).length;
+  const pending=Object.values(data.timeApprovals).filter(x=>x.status==="submitted").length;
+  return `
+    ${back()}<h2>Att göra</h2>
+    <div class="grid">
+      ${[
+        ["Elever utan APL-plats",unplaced],
+        ["Placeringar utan handledare",noSupervisor],
+        ["Placeringar utan riskunderlag",noRisk],
+        ["Placeringar utan kontrollerat beslut",noDecision],
+        ["Veckor som väntar på handledare",pending]
+      ].map(([name,n],i)=>`
+        <div class="card ${i%2?"yellow":""}">
+          <div class="big">${n}</div><strong>${name}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+/* KURSER */
+
+function coursesView(){
+  return `
+    ${back()}<h2>Kurser och APL-timmar</h2>
+    ${Object.entries(courses).map(([group,list])=>`
+      <div class="card">
+        <h3>${group==="NVF25"?"Gy25":"Gy11"} – ${group}</h3>
+        <table>
+          <tr><th>Kurs eller nivå</th><th>Timmar</th></tr>
+          ${list.map(([name,hours])=>`
+            <tr><td>${safe(name)}</td><td>${hours}</td></tr>
+          `).join("")}
+          <tr><th>Totalt</th>
+          <th>${list.reduce((sum,c)=>sum+c[1],0)}</th></tr>
+        </table>
+      </div>
+    `).join("")}
+    <div class="notice">
+      Kursmomenten är förenklade exempel och behöver stämmas av
+      mot styrdokument och skolans planering.
+    </div>
+  `;
+}
+
+function studentSelect(){
+  return `
+    <label>Elev</label>
+    <select name="studentId" required>
+      <option value="">Välj elev</option>
+      ${options(data.students,"",s=>s.name)}
+    </select>
+  `;
+}
+
+/* RISKBEDÖMNING */
+
+function risksView(){
+  return `
+    ${back()}<h2>Riskbedömning</h2>
+    <div class="notice">
+      Dokumentationsunderlag. En ifylld checklista innebär
+      inte att arbetsplatsen är godkänd.
+    </div>
+    <div class="card">
+      <h3>Nytt riskunderlag</h3>
+      <form onsubmit="addRisk(event)">
+        ${studentSelect()}
+        <label>Datum</label>
+        <input name="date" type="date" required>
+        <h3 style="margin-top:20px">Risker att bedöma</h3>
+        ${hazards.map((h,i)=>`
+          <label><input type="checkbox" name="hazard" value="${i}">
+          ${safe(h)}</label>
+        `).join("")}
+        <label>Risker och skyddsåtgärder</label>
+        <textarea name="measures" required></textarea>
+        <label>Ansvarig för åtgärder</label>
+        <input name="owner" required>
+        <label>Introduktion och skyddsutrustning</label>
+        <textarea name="intro"></textarea>
+        <label><input type="checkbox" name="complete">
+          Åtgärderna är genomförda och kontrollerade</label>
+        <button class="btn">Spara riskunderlag</button>
+      </form>
+    </div>
+    ${data.risks.slice().reverse().map(r=>`
+      <div class="card yellow">
+        <h3>${safe(pupil(r.studentId)?.name)}</h3>
+        <p>Datum: ${safe(r.date)}</p>
+        <p><strong>Risker:</strong>
+          ${(r.hazards||[]).map(i=>safe(hazards[i])).join(", ")}</p>
+        <p><strong>Åtgärder:</strong> ${safe(r.measures)}</p>
+        <p><strong>Ansvarig:</strong> ${safe(r.owner)}</p>
+        <p><strong>Introduktion:</strong> ${safe(r.intro)}</p>
+        <p>${r.complete?"Åtgärder markerade som klara":"Åtgärder behöver följas upp"}</p>
+        <button class="btn alt" onclick="window.print()">Skriv ut</button>
+      </div>
+    `).join("")}
+  `;
+}
+function addRisk(e){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  data.risks.push({
+    id:uid(),studentId:f.get("studentId"),date:f.get("date"),
+    hazards:f.getAll("hazard").map(Number),
+    measures:f.get("measures"),owner:f.get("owner"),
+    intro:f.get("intro"),complete:f.has("complete")
+  });
+  if(save())render();
+}
+
+/* REKTORSBESLUT */
+
+function decisionsView(){
+  return `
+    ${back()}<h2>APL-beslut</h2>
+    <div class="notice">
+      Endast dokumentationsstöd. Ett registrerat beslut
+      är inte samma sak som ett faktiskt rektorsbeslut.
+    </div>
+    <div class="card">
+      <h3>Registrera beslutsunderlag</h3>
+      <form onsubmit="addDecision(event)">
+        ${studentSelect()}
+        <label>Datum för samråd</label>
+        <input name="consultDate" type="date">
+        <label>Samråd med (namn och roll)</label>
+        <input name="consultWith">
+        <label>Beslutsdatum</label>
+        <input name="decisionDate" type="date">
+        <label>Beslutande rektor</label>
+        <input name="principal">
+        <label>Kurser, nivåer och delar som förläggs till APL</label>
+        <textarea name="scope" required></textarea>
+        <label>Övriga anteckningar</label>
+        <textarea name="notes"></textarea>
+        <label><input type="checkbox" name="approved">
+          Rektorsbeslut finns och har kontrollerats mot originalet</label>
+        <button class="btn">Spara underlag</button>
+      </form>
+    </div>
+    ${data.decisions.slice().reverse().map(d=>`
+      <div class="card yellow">
+        <h3>${safe(pupil(d.studentId)?.name)}</h3>
+        <p>Samråd: ${safe(d.consultDate)} – ${safe(d.consultWith)}</p>
+        <p>Rektor: ${safe(d.principal)} – ${safe(d.decisionDate)}</p>
+        <p>${safe(d.scope)}</p>
+        <p>${d.approved?"Beslut markerat som kontrollerat":"Beslut inte kontrollerat"}</p>
+        <button class="btn alt" onclick="window.print()">Skriv ut</button>
+      </div>
+    `).join("")}
+  `;
+}
+function addDecision(e){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  data.decisions.push({
+    id:uid(),studentId:f.get("studentId"),
+    consultDate:f.get("consultDate"),
+    consultWith:f.get("consultWith"),
+    decisionDate:f.get("decisionDate"),
+    principal:f.get("principal"),
+    scope:f.get("scope"),
+    notes:f.get("notes"),
+    approved:f.has("approved")
+  });
+  if(save())render();
+}
+
+/* APL-BESÖK */
+
+function visitsView(){
+  return `
+    ${back()}<h2>APL-besök</h2>
+    <div class="card">
+      <form onsubmit="addVisit(event)">
+        ${studentSelect()}
+        <label>Datum</label>
+        <input type="date" name="date" required>
+        <label>Anteckningar och nästa steg</label>
+        <textarea name="notes" required></textarea>
+        <button class="btn">Spara besök</button>
+      </form>
+    </div>
+    ${data.visits.slice().reverse().map(v=>`
+      <div class="card yellow">
+        <h3>${safe(pupil(v.studentId)?.name)}</h3>
+        <p>${safe(v.date)}</p>
+        <p>${safe(v.notes)}</p>
+      </div>
+    `).join("")}
+  `;
+}
+function addVisit(e){
+  e.preventDefault();
+  const f=new FormData(e.target);
+  data.visits.push({
+    id:uid(),studentId:f.get("studentId"),
+    date:f.get("date"),notes:f.get("notes")
+  });
+  if(save())render();
+}
+
+/* HANDLEDARE */
+
+function supervisorView(){
+  if(!data.supervisors.length)return `
+    <h2>Handledare</h2><p>Ingen handledare registrerad.</p>
+  `;
+  const h=supervisor(selectedSupervisor)||data.supervisors[0];
+  const students=data.students.filter(s=>s.supervisorId===h.id);
+  return `
+    <h1>Hej och välkommen!</h1>
+    <p>Här ser du dina APL-elever.</p>
+    <div class="notice">
+      Demoläge. Detta är inte en säker inloggning.
+    </div>
+    <div class="card yellow">
+      <label>Visa som handledare</label>
+      <select onchange="selectedSupervisor=this.value;render()">
+        ${options(data.supervisors,h.id,x=>x.name)}
+      </select>
+      <h3 style="margin-top:20px">${safe(h.name)}</h3>
+      <p>${safe(company(h.companyId)?.name)}</p>
+      <p>${safe(h.phone)}</p>
+    </div>
+    <div class="card">
+      <h3>Mina APL-elever</h3>
+      ${students.length?students.map(s=>`
+        <div class="item">
+          <strong>${safe(s.name)}</strong>
+          <p>Veckor: ${(groups[s.group]||[]).join(", ")}</p>
+          ${(groups[s.group]||[]).map(w=>{
+            const key=s.id+"|"+w,a=data.timeApprovals[key];
+            const days=data.time[key]||[];
+            const hours=days.reduce((n,d)=>n+(d.status==="present"?(Number(d.hours)||0):0),0);
+            return `<div class="item"><strong>Vecka ${w}</strong> – ${approvalLabel(a)}<p>${hours} rapporterade timmar</p>
+              ${a?.comment?`<p>Kommentar: ${safe(a.comment)}</p>`:""}
+              ${a?.status==="submitted"?`<label>Kommentar (frivillig vid godkännande)</label>
+                <textarea id="approval-comment-${s.id}-${w}"></textarea>
+                <button class="btn" onclick="approveWeek('${s.id}',${w},'${h.id}','approved')">Godkänn veckan</button>
+                <button class="btn alt" onclick="approveWeek('${s.id}',${w},'${h.id}','changes')">Begär ändring</button>`:""}
+            </div>`;
+          }).join("")}
+        </div>
+      `).join(""):"<p>Ingen elev är kopplad till handledaren ännu.</p>"}
+      <p class="muted">Godkännandet fungerar bara som demo i samma webbläsare. För riktiga användare krävs säker inloggning och gemensam datalagring.</p>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
