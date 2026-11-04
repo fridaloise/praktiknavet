@@ -103,6 +103,10 @@ td,th {padding:10px;border-bottom:1px solid var(--line);text-align:left}
 }
 @media print {
   header,footer,.btn,.no-print {display:none!important}
+  body {background:white!important;color:#222!important}
+  main {max-width:none;margin:0;padding:0}
+  #decision-print-sheet {border:0!important;margin:0;padding:0}
+  #decision-print-sheet tr {break-inside:avoid}
 }
 </style>
 </head>
@@ -125,7 +129,7 @@ td,th {padding:10px;border-bottom:1px solid var(--line);text-align:left}
 </header>
 
 <main id="app"></main>
-<footer>Praktiknavet 4.3 · Testversion med fiktiva uppgifter 💗</footer>
+<footer>Praktiknavet 4.4 · Testversion med fiktiva uppgifter 💗</footer>
 
 <script>
 "use strict";
@@ -455,6 +459,7 @@ function teacherView(){
   if(page==="visits")return visitsView();
   if(page==="risks")return risksView();
   if(page==="decisions")return decisionsView();
+  if(page==="decisionPrint")return decisionPrintView();
   return "";
 }
 
@@ -1130,62 +1135,152 @@ function addRisk(e){
   if(save())render();
 }
 
-/* REKTORSBESLUT */
+/* REKTORSBESLUT – FÖRIFYLLDA UNDERLAG FÖR ÅK 2 OCH 3 */
+
+let decisionStudentId="";
+
+function decisionStudentOptions(){
+  return `<option value="">Välj elev</option>`+
+    data.students.map(s=>`<option value="${safe(s.id)}" ${s.id===decisionStudentId?"selected":""}>${safe(s.name)}</option>`).join("");
+}
+
+function decisionStudentChanged(value){
+  decisionStudentId=value;
+  const area=el("decision-scope");
+  if(area)area.innerHTML=decisionScopeFields();
+}
+
+function decisionScopeFields(){
+  const s=pupil(decisionStudentId);
+  if(!s)return `<p class="muted">Välj elev så fylls rätt kurser, timmar och föreslagna moment i automatiskt.</p>`;
+  const list=courseList(s);
+  const year=s.group.startsWith("NVF25")?"Årskurs 2 (Gy25)":"Årskurs 3 (Gy11)";
+  return `<div class="notice"><strong>${year}</strong><p>Föreslagna moment är förenklade utkast. Kontrollera dem mot gällande kurs-/ämnesplan och vad arbetsplatsen faktiskt kan erbjuda innan rektor fattar beslut.</p></div>
+    <p><strong>Företag:</strong> ${safe(company(s.companyId)?.name||"Ingen placering registrerad")}</p>
+    ${list.map(([name,hours],i)=>`<div class="item">
+      <label><input type="checkbox" name="course-${i}" checked onchange="toggleDecisionCourse(${i},this.checked)"> <strong>${safe(name)}</strong></label>
+      <div id="decision-course-${i}">
+        <label>APL-timmar</label><input type="number" min="0" step="1" name="hours-${i}" value="${hours}" required>
+        <label>Delar/moment som planeras på arbetsplatsen (bocka ur det som inte är aktuellt)</label>
+        ${(moments[name]||[]).map((m,j)=>`<label style="font-weight:500"><input type="checkbox" name="moment-${i}" value="${j}" checked> ${safe(m)}</label>`).join("")}
+        <label>Annat eller precisering (valfritt)</label>
+        <textarea name="extra-${i}" placeholder="Anpassa till arbetsplatsen vid behov"></textarea>
+      </div>
+    </div>`).join("")}`;
+}
+
+function toggleDecisionCourse(i,checked){
+  const target=el("decision-course-"+i);
+  if(!target)return;
+  target.style.display=checked?"":"none";
+  target.querySelectorAll("input,textarea").forEach(x=>x.disabled=!checked);
+}
 
 function decisionsView(){
   return `
     ${back()}<h2>APL-beslut</h2>
-    <div class="notice">
-      Endast dokumentationsstöd. Ett registrerat beslut
-      är inte samma sak som ett faktiskt rektorsbeslut.
+    <div class="notice"><strong>Förifyllda beslutsunderlag för årskurs 2 och 3.</strong>
+      <p>Välj elev så hämtas kurser och timmar. Anpassa vilka delar som ska genomföras på just den arbetsplatsen. Detta är ett utkast tills rektor har fattat beslut.</p>
+      <p class="muted">Testversion utan säker inloggning. Använd endast fiktiva uppgifter. Ett sparat underlag är inte ett faktiskt rektorsbeslut.</p>
     </div>
     <div class="card">
-      <h3>Registrera beslutsunderlag</h3>
+      <h3>Skapa beslutsunderlag</h3>
       <form onsubmit="addDecision(event)">
-        ${studentSelect()}
-        <label>Datum för samråd</label>
-        <input name="consultDate" type="date">
-        <label>Samråd med (namn och roll)</label>
-        <input name="consultWith">
-        <label>Beslutsdatum</label>
-        <input name="decisionDate" type="date">
-        <label>Beslutande rektor</label>
-        <input name="principal">
-        <label>Kurser, nivåer och delar som förläggs till APL</label>
-        <textarea name="scope" required></textarea>
-        <label>Övriga anteckningar</label>
-        <textarea name="notes"></textarea>
-        <label><input type="checkbox" name="approved">
-          Rektorsbeslut finns och har kontrollerats mot originalet</label>
+        <label>Elev</label>
+        <select name="studentId" required onchange="decisionStudentChanged(this.value)">${decisionStudentOptions()}</select>
+        <div id="decision-scope">${decisionScopeFields()}</div>
+        <div class="fields">
+          <div><label>APL-period, från</label><input type="date" name="periodStart" required></div>
+          <div><label>APL-period, till</label><input type="date" name="periodEnd" required></div>
+        </div>
+        <label>Datum för samråd med arbetsplatsen</label><input name="consultDate" type="date" required>
+        <label>Samråd med (namn och roll)</label><input name="consultWith" required>
+        <label>Vad har stämts av med arbetsplatsen?</label>
+        <textarea name="consultNotes" placeholder="Exempel: arbetsuppgifter, handledning och möjlighet att genomföra valda moment" required></textarea>
+        <label>Övriga anteckningar</label><textarea name="notes"></textarea>
+        <h3>Rektorsbeslut</h3>
+        <p class="muted">Fyll i nedan först när ett verkligt beslut har fattats och kontrollerats mot originalet.</p>
+        <label>Beslutsdatum</label><input name="decisionDate" type="date">
+        <label>Beslutande rektor</label><input name="principal">
+        <label><input type="checkbox" name="approved"> Rektorsbeslut finns och har kontrollerats mot originalet</label>
         <button class="btn">Spara underlag</button>
       </form>
     </div>
-    ${data.decisions.slice().reverse().map(d=>`
+    <h3>Sparade underlag</h3>
+    ${data.decisions.length?data.decisions.slice().reverse().map(d=>`
       <div class="card yellow">
-        <h3>${safe(pupil(d.studentId)?.name)}</h3>
-        <p>Samråd: ${safe(d.consultDate)} – ${safe(d.consultWith)}</p>
-        <p>Rektor: ${safe(d.principal)} – ${safe(d.decisionDate)}</p>
-        <p>${safe(d.scope)}</p>
-        <p>${d.approved?"Beslut markerat som kontrollerat":"Beslut inte kontrollerat"}</p>
-        <button class="btn alt" onclick="window.print()">Skriv ut</button>
-      </div>
-    `).join("")}
+        <h3>${safe(pupil(d.studentId)?.name||"Okänd elev")}</h3>
+        <p>${safe(d.periodStart||"")}${d.periodEnd?" – "+safe(d.periodEnd):""}</p>
+        <p><strong>Företag:</strong> ${safe(d.companyName||company(pupil(d.studentId)?.companyId)?.name||"Ej angivet")}</p>
+        <p><strong>Samråd:</strong> ${safe(d.consultDate)} – ${safe(d.consultWith)}</p>
+        <p><strong>Status:</strong> ${d.approved?"Rektorsbeslut kontrollerat":"Underlag – ännu inte kontrollerat rektorsbeslut"}</p>
+        <button class="btn alt" onclick="printDecision('${safe(d.id)}')">Visa / Skriv ut / Spara PDF</button>
+      </div>`).join(""):'<div class="card"><p>Inga underlag sparade ännu.</p></div>'}
   `;
 }
+
 function addDecision(e){
   e.preventDefault();
-  const f=new FormData(e.target);
+  const f=new FormData(e.target),sid=String(f.get("studentId")||"");
+  const s=pupil(sid);
+  if(!s)return alert("Välj elev först.");
+  const periodStart=String(f.get("periodStart")||""),periodEnd=String(f.get("periodEnd")||"");
+  if(periodEnd<periodStart)return alert("Slutdatum måste vara efter startdatum.");
+  const list=courseList(s);
+  const selectedCourses=list.map(([name,defaultHours],i)=>{
+    if(!f.has("course-"+i))return null;
+    const hours=Number(f.get("hours-"+i));
+    if(!Number.isInteger(hours)||hours<0)return {invalid:true};
+    const chosen=f.getAll("moment-"+i).map(Number).filter(j=>Number.isInteger(j)&&j>=0&&j<(moments[name]||[]).length);
+    const extra=String(f.get("extra-"+i)||"").trim();
+    return {name,hours,moments:chosen.map(j=>moments[name][j]),extra};
+  }).filter(Boolean);
+  if(!selectedCourses.length)return alert("Välj minst en kurs eller nivå.");
+  if(selectedCourses.some(c=>c.invalid))return alert("Kontrollera APL-timmarna.");
+  if(selectedCourses.some(c=>!c.moments.length&&!c.extra))return alert("Ange minst ett moment eller en precisering för varje vald kurs.");
+  if(f.has("approved")&&(!f.get("principal")||!f.get("decisionDate")))return alert("Ange rektor och beslutsdatum för kontrollerat beslut.");
+  const c=company(s.companyId),h=supervisor(s.supervisorId);
   data.decisions.push({
-    id:uid(),studentId:f.get("studentId"),
-    consultDate:f.get("consultDate"),
-    consultWith:f.get("consultWith"),
-    decisionDate:f.get("decisionDate"),
-    principal:f.get("principal"),
-    scope:f.get("scope"),
-    notes:f.get("notes"),
-    approved:f.has("approved")
+    id:uid(),studentId:sid,group:s.group,companyName:c?.name||"",supervisorName:h?.name||"",
+    periodStart,periodEnd,consultDate:String(f.get("consultDate")||""),
+    consultWith:String(f.get("consultWith")||"").trim(),consultNotes:String(f.get("consultNotes")||"").trim(),
+    decisionDate:String(f.get("decisionDate")||""),principal:String(f.get("principal")||"").trim(),
+    courses:selectedCourses,scope:selectedCourses.map(c=>c.name+" ("+c.hours+" timmar): "+[...c.moments,c.extra].filter(Boolean).join(", ")).join("\n"),
+    notes:String(f.get("notes")||"").trim(),approved:f.has("approved")
   });
+  decisionStudentId="";
   if(save())render();
+}
+
+let printedDecisionId="";
+function printDecision(id){printedDecisionId=id;page="decisionPrint";render();window.scrollTo(0,0);}
+function decisionPrintView(){
+  const d=data.decisions.find(x=>x.id===printedDecisionId);
+  if(!d)return `<button class="btn" onclick="go('decisions')">Tillbaka</button><p>Underlaget hittades inte.</p>`;
+  const s=pupil(d.studentId);
+  const sections=Array.isArray(d.courses)?d.courses.map(c=>`<tr><td><strong>${safe(c.name)}</strong><br>${c.moments.map(safe).join("; ")}${c.extra?"; "+safe(c.extra):""}</td><td style="white-space:nowrap">${Number(c.hours)||0} h</td></tr>`).join("")
+    :`<tr><td>${safe(d.scope||"Äldre underlag – kontrollera innehållet")}</td><td>–</td></tr>`;
+  return `<div class="no-print"><button class="btn back" onclick="go('decisions')">Tillbaka</button><button class="btn" onclick="window.print()">Skriv ut / Spara som PDF</button></div>
+    <div class="card" id="decision-print-sheet" style="background:white;color:#222;border:1px solid #bbb;border-radius:0">
+      <h2 style="font-size:23px">Underlag för rektorsbeslut om APL</h2>
+      <p><strong>${d.approved?"Beslut uppges vara kontrollerat mot original":"UTKAST – inget rektorsbeslut registrerat"}</strong></p>
+      <p><strong>Elev:</strong> ${safe(s?.name||"Saknas")}<br>
+      <strong>Klass:</strong> ${safe(d.group||s?.group||"")}<br>
+      <strong>APL-arbetsplats:</strong> ${safe(d.companyName||company(s?.companyId)?.name||"Ej angiven")}<br>
+      <strong>Handledare:</strong> ${safe(d.supervisorName||"Ej angiven")}<br>
+      <strong>APL-period:</strong> ${safe(d.periodStart||"Ej angiven")} – ${safe(d.periodEnd||"Ej angiven")}</p>
+      <h3>Kurser/ämnesnivåer och delar som förläggs till APL</h3>
+      <table><tr><th>Kurs/nivå och planerat innehåll</th><th>Tid</th></tr>${sections}</table>
+      <p><strong>Totalt planerad tid:</strong> ${Array.isArray(d.courses)?d.courses.reduce((n,c)=>n+(Number(c.hours)||0),0)+" timmar":"Se underlag"}</p>
+      <h3>Samråd med arbetsplatsen</h3>
+      <p><strong>Datum:</strong> ${safe(d.consultDate||"Ej angivet")}<br><strong>Med:</strong> ${safe(d.consultWith||"Ej angivet")}</p>
+      <p>${safe(d.consultNotes||"Ingen samrådsanteckning registrerad")}</p>
+      ${d.notes?`<h3>Övrigt</h3><p>${safe(d.notes)}</p>`:""}
+      <h3>Rektors beslut</h3>
+      <p><strong>Beslutsdatum:</strong> ${safe(d.decisionDate||"Ej registrerat")}<br><strong>Beslutande rektor:</strong> ${safe(d.principal||"Ej registrerad")}</p>
+      <p>Underskrift: _______________________________________</p>
+      <p class="muted">Underlaget ska granskas mot gällande styrdokument och dokumenteras i skolans godkända system. En markering i Praktiknavets testversion ersätter inte rektors faktiska beslut.</p>
+    </div>`;
 }
 
 /* APL-BESÖK */
